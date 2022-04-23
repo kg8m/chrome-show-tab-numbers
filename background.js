@@ -13,7 +13,7 @@ function requestToUpdateAll() {
 function updateAll() {
   chrome.tabs.query({ currentWindow: true, discarded: false }, (tabs) => {
     tabs.forEach((tab) => {
-      if (/^https?:\/\//.test(tab.url)) {
+      if (/^https?:\/\/(?!chrome\.google\.com)/.test(tab.url)) {
         chrome.scripting.executeScript({
           target: { tabId: tab.id },
           func: updateOne,
