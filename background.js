@@ -17,16 +17,16 @@ function updateAll() {
         chrome.scripting.executeScript({
           target: { tabId: tab.id },
           func: updateOne,
-          args: [tab.index, tab.title],
+          args: [tab.index + 1, tab.title],
         });
       }
     });
   });
 }
 
-function updateOne(index, title) {
+function updateOne(number, title) {
   const TITLE_PATTERN = /^\d+\. /;
   const originalTitle = title.replace(TITLE_PATTERN, "");
 
-  document.title = `${index + 1}. ${originalTitle}`;
+  document.title = `${number}. ${originalTitle}`;
 }
