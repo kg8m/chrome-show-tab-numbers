@@ -42,6 +42,6 @@ function updateOne(number) {
     unnumberedTitle = document.title;
   }
 
-  document.title = cache.numberedTitle = `${number}. ${unnumberedTitle}`;
+  document.title = cache.numberedTitle = `${number}. ${unnumberedTitle}`.trim();
   document.showTabNumbers = cache;
 }
