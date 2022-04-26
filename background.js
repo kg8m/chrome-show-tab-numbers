@@ -25,8 +25,23 @@ function updateAll() {
 }
 
 function updateOne(number) {
-  const TITLE_PATTERN = /^\d+\. /;
-  const originalTitle = document.title.replace(TITLE_PATTERN, "");
+  const cache = document.showTabNumbers ?? {};
 
-  document.title = `${number}. ${originalTitle}`;
+  if (number === cache.number && document.title === cache.numberedTitle) {
+    return;
+  }
+
+  cache.number = number;
+
+  let unnumberedTitle;
+  if ("isNumbered" in cache) {
+    const TITLE_PATTERN = /^\d+\. /;
+    unnumberedTitle = document.title.replace(TITLE_PATTERN, "");
+  } else {
+    cache.isNumbered = true;
+    unnumberedTitle = document.title;
+  }
+
+  document.title = cache.numberedTitle = `${number}. ${unnumberedTitle}`;
+  document.showTabNumbers = cache;
 }
