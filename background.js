@@ -31,17 +31,10 @@ function updateOne(number) {
     return;
   }
 
+  const TITLE_PATTERN = /^\d+\. /;
+  const unnumberedTitle = document.title.replace(TITLE_PATTERN, "");
+
   cache.number = number;
-
-  let unnumberedTitle;
-  if ("isNumbered" in cache) {
-    const TITLE_PATTERN = /^\d+\. /;
-    unnumberedTitle = document.title.replace(TITLE_PATTERN, "");
-  } else {
-    cache.isNumbered = true;
-    unnumberedTitle = document.title;
-  }
-
   document.title = cache.numberedTitle = `${number}. ${unnumberedTitle}`.trim();
   document.showTabNumbers = cache;
 }
