@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Chrome Show Tab Numbers",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A Chromium extension to show tab numbers.",
   "icons": {
     "128": "assets/icon128.png"
