@@ -14,7 +14,7 @@ How to Install
 
 ### From Chrome Web Store
 
-Coming soon...
+https://chrome.google.com/webstore/detail/pflnpcinjbcfefgbejjfanemlgcfjbna
 
 
 ### From Source
