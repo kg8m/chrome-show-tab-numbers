@@ -42,7 +42,9 @@ How to Develop
 How to Release
 --------------------------------------------------
 
-1. Update the version: `manifeste.json` and `package.json`
+1. Update the version:
+   1. Edit `manifeste.json` and `package.json`
+   1. Execute `npm install` to update `package-lock.json`
 1. Create a new tag: `git tag ...`
 1. Push the changes
 1. Execute `make zip`
