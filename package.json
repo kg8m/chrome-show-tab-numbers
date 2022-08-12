@@ -6,11 +6,11 @@
   "devDependencies": {
     "eslint": "^8.14.0",
     "eslint-config-prettier": "^8.5.0",
-    "eslint-plugin-prettier": "^4.0.0",
     "prettier": "^2.6.2"
   },
   "scripts": {
-    "lint": "eslint ."
+    "lint": "eslint .*.js *.js",
+    "fix": "eslint --fix .*.js *.js && prettier --write .*.js *.js"
   },
   "repository": {
     "type": "git",

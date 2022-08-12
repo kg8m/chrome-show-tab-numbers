@@ -5,6 +5,10 @@ package_targets := manifest.json background.js assets/icon128.png
 lint:
 	npm run lint
 
+.PHONY: fix
+fix:
+	npm run fix
+
 .PHONY: zip
 zip:
 	rm -f packages/$(package_name).zip

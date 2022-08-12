@@ -35,6 +35,7 @@ How to Develop
 1. Edit source codes
 1. Execute `make lint`
 1. (Fix lint errors and retry executing `make lint`)
+1. Execute `make fix`
 1. Create a pull request
 
 
