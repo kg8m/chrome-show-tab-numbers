@@ -9,6 +9,6 @@
   "background": {
     "service_worker": "background.js"
   },
-  "permissions": ["scripting", "tabs"],
+  "permissions": ["scripting", "tabGroups", "tabs"],
   "host_permissions": ["<all_urls>"]
 }
