@@ -10,17 +10,20 @@ function requestToUpdateAll() {
   timer = setTimeout(updateAll, 300);
 }
 
-function updateAll() {
-  chrome.tabs.query({ currentWindow: true, discarded: false }, (tabs) => {
-    tabs.forEach((tab) => {
-      if (/^https?:\/\/(?!chrome\.google\.com)/.test(tab.url)) {
-        chrome.scripting.executeScript({
-          target: { tabId: tab.id },
-          func: updateOne,
-          args: [tab.index + 1],
-        });
-      }
-    });
+async function updateAll() {
+  const tabs = await chrome.tabs.query({
+    currentWindow: true,
+    discarded: false,
+  });
+
+  tabs.forEach((tab) => {
+    if (/^https?:\/\/(?!chrome\.google\.com)/.test(tab.url)) {
+      chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        func: updateOne,
+        args: [tab.index + 1],
+      });
+    }
   });
 }
 
