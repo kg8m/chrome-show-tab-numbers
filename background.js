@@ -66,7 +66,7 @@ function updateOne(number) {
     return;
   }
 
-  const TITLE_PATTERN = /^\d+\. /;
+  const TITLE_PATTERN = /^\d+\. (?:\(\d+\) \d+\. )?/;
   const unnumberedTitle = document.title.replace(TITLE_PATTERN, "");
 
   cache.number = number;
