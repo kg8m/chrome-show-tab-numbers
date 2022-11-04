@@ -44,11 +44,6 @@ How to Develop
 How to Release
 --------------------------------------------------
 
-1. Update the version:
-   1. Edit `manifeste.json` and `package.json`
-   1. Execute `npm install` to update `package-lock.json`
-   1. Commit the changes: `git commit`
-1. Create a new tag: `git tag ...`
-1. Execute `git push --tags`
+1. Update the version: `make update-version`
 1. Execute `make zip`
 1. Upload the built zip file to Chrome Web Store and publish it
