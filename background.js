@@ -7,6 +7,10 @@ chrome.tabs.onMoved.addListener(requestToUpdateAll);
 chrome.tabs.onRemoved.addListener(requestToUpdateAll);
 chrome.tabs.onUpdated.addListener(requestToUpdateAll);
 
+const VALID_PROTOCOLS = new Set(["https:", "http:"]);
+const INVALID_HOSTNAMES = new Set(["chrome.google.com"]);
+const INVALID_PATHNAME_PATTERN = /\.pdf$/;
+
 let timer = -1;
 
 function requestToUpdateAll() {
@@ -32,7 +36,7 @@ async function updateAll() {
       indexAdjuster--;
     }
 
-    if (/^https?:\/\/(?!chrome\.google\.com)/.test(tab.url)) {
+    if (isValidUrl(tab.url)) {
       chrome.scripting.executeScript({
         target: { tabId: tab.id },
         func: updateOne,
@@ -40,6 +44,16 @@ async function updateAll() {
       });
     }
   });
+}
+
+function isValidUrl(urlString) {
+  const url = new URL(urlString);
+
+  return (
+    VALID_PROTOCOLS.has(url.protocol) &&
+    !INVALID_HOSTNAMES.has(url.hostname) &&
+    !INVALID_PATHNAME_PATTERN.test(url.pathname)
+  );
 }
 
 function updateOne(number) {
