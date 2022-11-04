@@ -23,7 +23,10 @@ async function updateAll() {
     currentWindow: true,
     discarded: false,
   });
-  const collapsedTabGroups = await chrome.tabGroups.query({ collapsed: true });
+  const collapsedTabGroups = await chrome.tabGroups.query({
+    windowId: chrome.windows.WINDOW_ID_CURRENT,
+    collapsed: true,
+  });
   const collapsedTabGroupIds = new Set(
     collapsedTabGroups.map((tabGroup) => tabGroup.id)
   );
