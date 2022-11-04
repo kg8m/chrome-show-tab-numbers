@@ -20,7 +20,6 @@ How to Install
 
 https://chrome.google.com/webstore/detail/pflnpcinjbcfefgbejjfanemlgcfjbna
 
-
 ### From Source
 
 1. Download and unzip this repository
@@ -28,7 +27,6 @@ https://chrome.google.com/webstore/detail/pflnpcinjbcfefgbejjfanemlgcfjbna
 1. Enable "Developer mode"
 1. Click "Load unpacked"
 1. Select the downloaded directory
-
 
 How to Develop
 --------------------------------------------------
@@ -42,7 +40,6 @@ How to Develop
 1. (Fix lint errors and retry executing `make lint`)
 1. Format the source codes: `make fix`
 1. Create a pull request
-
 
 How to Release
 --------------------------------------------------
