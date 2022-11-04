@@ -16,11 +16,12 @@ update-version:
 	$${EDITOR} ./manifest.json ./package.json
 	[ "$$(cat manifest.json | ${EXTRACT_VERSION})" = "$$(cat package.json | ${EXTRACT_VERSION})" ] || \
 		(echo "ERROR - version mismatch in manifest.json and package.json" && exit 1)
-	git add --patch -- manifest.json package.json
+	npm install
+	git add --patch -- manifest.json package.json package-lock.json
 	git commit --message "Bump up version"
 	git tag "v$$(cat manifest.json | ${EXTRACT_VERSION})"
-	npm install
 	git push --tags
+	git push
 
 .PHONY: zip
 zip:
