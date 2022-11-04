@@ -20,7 +20,6 @@ How to Install
 
 https://chrome.google.com/webstore/detail/pflnpcinjbcfefgbejjfanemlgcfjbna
 
-
 ### From Source
 
 1. Download and unzip this repository
@@ -29,19 +28,18 @@ https://chrome.google.com/webstore/detail/pflnpcinjbcfefgbejjfanemlgcfjbna
 1. Click "Load unpacked"
 1. Select the downloaded directory
 
-
 How to Develop
 --------------------------------------------------
 
 1. Clone this repository
 1. Go to the cloned directory
 1. Execute `npm install`
+1. Create a branch
 1. Edit source codes
-1. Execute `make lint`
+1. Lint the source codes: `make lint`
 1. (Fix lint errors and retry executing `make lint`)
-1. Execute `make fix`
+1. Format the source codes: `make fix`
 1. Create a pull request
-
 
 How to Release
 --------------------------------------------------
@@ -49,7 +47,8 @@ How to Release
 1. Update the version:
    1. Edit `manifeste.json` and `package.json`
    1. Execute `npm install` to update `package-lock.json`
+   1. Commit the changes: `git commit`
 1. Create a new tag: `git tag ...`
-1. Push the changes
+1. Execute `git push --tags`
 1. Execute `make zip`
-1. Upload the zip file to Chrome Web Store
+1. Upload the built zip file to Chrome Web Store and publish it
