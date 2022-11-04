@@ -23,10 +23,19 @@ async function updateAll() {
     currentWindow: true,
     discarded: false,
   });
-  const collapsedTabGroups = await chrome.tabGroups.query({
-    windowId: chrome.windows.WINDOW_ID_CURRENT,
-    collapsed: true,
-  });
+
+  let collapsedTabGroups;
+  try {
+    collapsedTabGroups = await chrome.tabGroups.query({
+      windowId: chrome.windows.WINDOW_ID_CURRENT,
+      collapsed: true,
+    });
+  } catch (error) {
+    if (error.message.includes("Grouping is not supported by tabs")) {
+      return;
+    }
+  }
+
   const collapsedTabGroupIds = new Set(
     collapsedTabGroups.map((tabGroup) => tabGroup.id)
   );
