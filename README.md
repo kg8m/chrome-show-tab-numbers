@@ -8,7 +8,10 @@ A Chromium extension to show tab numbers.
 
 ![Screenshot](assets/screenshot.png)
 
-This extension supports Google Chrome's collapsed tab group feature. Tabs belonging to a collapsed tab group are ignored.
+Notes:
+
+* This extension supports Google Chrome's collapsed tab group feature. Tabs belonging to a collapsed tab group are ignored.
+* If the current page is a PDF, this extension doesn't show a tab number because `document.title` returns `""` for a PDF document.
 
 How to Install
 --------------------------------------------------
