@@ -4,8 +4,6 @@ HELP_SEPARATOR := ＠
 PACKAGE_NAME := chrome-show-tab-numbers
 PACKAGE_TARGETS := manifest.json background.js assets/icon128.png
 
-EXTRACT_VERSION := jq --raw-output .version
-
 .PHONY: help
 help:  ## Show help
 	@cat $(MAKEFILE_LIST) | \
@@ -21,17 +19,17 @@ lint:  ## Lint files
 fix:  ## Format files
 	npm run fix
 
-.PHONY: update-version
-update-version:  ## Update version
-	$${EDITOR} ./manifest.json ./package.json
-	[ "$$(cat manifest.json | ${EXTRACT_VERSION})" = "$$(cat package.json | ${EXTRACT_VERSION})" ] || \
-		(echo "ERROR - version mismatch in manifest.json and package.json" && exit 1)
-	npm install
-	git add --patch -- manifest.json package.json package-lock.json
-	git commit --message "Bump up version"
-	git tag "v$$(cat manifest.json | ${EXTRACT_VERSION})"
-	git push --tags
-	git push
+.PHONY: update-major
+update-major:  ## Update the major version
+	scripts/update-version major
+
+.PHONY: update-minor
+update-minor:  ## Update the minor version
+	scripts/update-version minor
+
+.PHONY: update-patch
+update-patch:  ## Update the patch version
+	scripts/update-version patch
 
 .PHONY: zip
 zip:  ## Build a zip file for upload

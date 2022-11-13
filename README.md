@@ -44,6 +44,6 @@ How to Develop
 How to Release
 --------------------------------------------------
 
-1. Update the version: `make update-version`
+1. Update the version: `make update-major`, `make update-minor`, or `make update-patch`
 1. Execute `make zip`
 1. Upload the built zip file to [Chrome Web Store](https://chrome.google.com/webstore/devconsole) and publish it
