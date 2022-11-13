@@ -18,6 +18,7 @@ jobs:
           cache: npm
       - run: npm install
       - run: make lint
+    timeout-minutes: 5
   format-check:
     runs-on: ubuntu-latest
     steps:
@@ -28,3 +29,4 @@ jobs:
           cache: npm
       - run: npm install
       - run: make format-check
+    timeout-minutes: 5
