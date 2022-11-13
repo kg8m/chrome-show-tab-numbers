@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+function fail {
+  local message="${1:?}"
+  echo "ERROR - ${message}" >&2
+  exit 1
+}
+
+function check_version_consistency {
+  local manifest_version="$(extract_version manifest.json)"
+  local package_version="$(extract_version package.json)"
+
+  if [ ! "${manifest_version}" = "${package_version}" ]; then
+    fail "version mismatch in manifest.json and package.json"
+  fi
+}
+
+function extract_version {
+  local json_filepath="${1:?}"
+  jq --raw-output .version < "${json_filepath}"
+}
+
+git switch main
+git pull
+
+current_version="$(git describe --tags --abbrev=0 | grep -E '\d+\.\d+\.\d+$' -o)"
+IFS=. read -ra current_version_parts <<< "${current_version}"
+current_major="${current_version_parts[0]}"
+current_minor="${current_version_parts[1]}"
+current_patch="${current_version_parts[2]}"
+
+[ -n "${current_major}" ] || fail "current major version is missing"
+[ -n "${current_minor}" ] || fail "current minor version is missing"
+[ -n "${current_patch}" ] || fail "current patch version is missing"
+
+case "${1:?}" in
+  major)
+    next_version="$((current_major + 1)).0.0"
+    ;;
+  minor)
+    next_version="${current_major}.$((current_minor + 1)).0"
+    ;;
+  patch)
+    next_version="${current_major}.${current_minor}.$((current_patch + 1))"
+    ;;
+  *)
+    echo "Unknown type: $1" >&2
+    exit 1
+    ;;
+esac
+
+check_version_consistency
+sed -ie "s/\"version\": \"${current_version}\"/\"version\": \"${next_version}\"/" manifest.json package.json
+check_version_consistency
+
+# Reflect package.json changes to package-lock.json.
+npm install
+
+# Apply version changes.
+git add --patch -- manifest.json package.json package-lock.json
+git commit --message "Bump up version"
+git push
+
+# Create a new tag.
+git tag "v$(extract_version package-lock.json)"
+git push --tags

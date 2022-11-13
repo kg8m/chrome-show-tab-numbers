@@ -1,30 +1,38 @@
-package_name := chrome-show-tab-numbers
-package_targets := manifest.json background.js assets/icon128.png
+.DEFAULT_GOAL := help
+HELP_SEPARATOR := ＠
 
-EXTRACT_VERSION := jq --raw-output .version
+PACKAGE_NAME := chrome-show-tab-numbers
+PACKAGE_TARGETS := manifest.json background.js assets/icon128.png
+
+.PHONY: help
+help:  ## Show help
+	@cat $(MAKEFILE_LIST) | \
+		grep -E '^[-a-z]+:.*##' | \
+		sed -e 's/:.*## /$(HELP_SEPARATOR)/' | \
+		column -t -s $(HELP_SEPARATOR)
 
 .PHONY: lint
-lint:
+lint:  ## Lint files
 	npm run lint
 
 .PHONY: fix
-fix:
+fix:  ## Format files
 	npm run fix
 
-.PHONY: update-version
-update-version:
-	$${EDITOR} ./manifest.json ./package.json
-	[ "$$(cat manifest.json | ${EXTRACT_VERSION})" = "$$(cat package.json | ${EXTRACT_VERSION})" ] || \
-		(echo "ERROR - version mismatch in manifest.json and package.json" && exit 1)
-	npm install
-	git add --patch -- manifest.json package.json package-lock.json
-	git commit --message "Bump up version"
-	git tag "v$$(cat manifest.json | ${EXTRACT_VERSION})"
-	git push --tags
-	git push
+.PHONY: update-major
+update-major:  ## Update the major version
+	scripts/update-version major
+
+.PHONY: update-minor
+update-minor:  ## Update the minor version
+	scripts/update-version minor
+
+.PHONY: update-patch
+update-patch:  ## Update the patch version
+	scripts/update-version patch
 
 .PHONY: zip
-zip:
-	rm -f packages/$(package_name).zip
-	zip packages/$(package_name) $(package_targets)
+zip:  ## Build a zip file for upload
+	rm -f packages/$(PACKAGE_NAME).zip
+	zip packages/$(PACKAGE_NAME) $(PACKAGE_TARGETS)
 	open packages
