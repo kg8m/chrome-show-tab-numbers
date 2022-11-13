@@ -1,6 +1,6 @@
 {
   "name": "chrome-show-tab-numbers",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "A Chromium extension to show tab numbers.",
   "main": "background.js",
   "devDependencies": {
