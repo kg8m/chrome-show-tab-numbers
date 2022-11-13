@@ -18,3 +18,13 @@ jobs:
           cache: npm
       - run: npm install
       - run: make lint
+  format-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "19.0.0"
+          cache: npm
+      - run: npm install
+      - run: make format-check

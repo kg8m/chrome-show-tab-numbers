@@ -15,9 +15,13 @@ help:  ## Show help
 lint:  ## Lint files
 	npm run lint
 
-.PHONY: fix
-fix:  ## Format files
-	npm run fix
+.PHONY: format
+format:  ## Format files
+	npm run format
+
+.PHONY: format-check
+format-check:  ## Check if files are formatted
+	npm run format-check
 
 .PHONY: update-major
 update-major:  ## Update the major version
