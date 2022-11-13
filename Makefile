@@ -1,8 +1,8 @@
 .DEFAULT_GOAL := help
 HELP_SEPARATOR := ＠
 
-package_name := chrome-show-tab-numbers
-package_targets := manifest.json background.js assets/icon128.png
+PACKAGE_NAME := chrome-show-tab-numbers
+PACKAGE_TARGETS := manifest.json background.js assets/icon128.png
 
 EXTRACT_VERSION := jq --raw-output .version
 
@@ -35,6 +35,6 @@ update-version:  ## Update version
 
 .PHONY: zip
 zip:  ## Build a zip file for upload
-	rm -f packages/$(package_name).zip
-	zip packages/$(package_name) $(package_targets)
+	rm -f packages/$(PACKAGE_NAME).zip
+	zip packages/$(PACKAGE_NAME) $(PACKAGE_TARGETS)
 	open packages
