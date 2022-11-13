@@ -82,6 +82,7 @@ function updateOne(number) {
     .replace(NOTIFICATION_COUNT_PATTERN, "$1 ");
 
   cache.number = number;
-  document.title = cache.numberedTitle = `${number}. ${unnumberedTitle}`.trim();
+  cache.numberedTitle = `${number}. ${unnumberedTitle}`.trim();
+  document.title = cache.numberedTitle;
   document.showTabNumbers = cache;
 }
