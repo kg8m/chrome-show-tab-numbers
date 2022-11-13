@@ -75,8 +75,11 @@ function updateOne(number) {
     return;
   }
 
-  const TITLE_PATTERN = /^\d+\. (?:\(\d+\) \d+\. )?/;
-  const unnumberedTitle = document.title.replace(TITLE_PATTERN, "");
+  const NUMBERED_PATTERN = /^\d+\. ?/;
+  const NOTIFICATION_COUNT_PATTERN = /^(\(\d+\)) \d+\. (?:\(\d+\) )?/;
+  const unnumberedTitle = document.title
+    .replace(NUMBERED_PATTERN, "")
+    .replace(NOTIFICATION_COUNT_PATTERN, "$1 ");
 
   cache.number = number;
   document.title = cache.numberedTitle = `${number}. ${unnumberedTitle}`.trim();
