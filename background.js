@@ -59,6 +59,10 @@ async function updateAll() {
 }
 
 function isValidUrl(urlString) {
+  if (urlString === "") {
+    return false;
+  }
+
   const url = new URL(urlString);
 
   return (
