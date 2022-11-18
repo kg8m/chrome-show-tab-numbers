@@ -10,5 +10,13 @@
     "service_worker": "background.js"
   },
   "permissions": ["scripting", "tabGroups", "tabs"],
-  "host_permissions": ["<all_urls>"]
+  "host_permissions": ["<all_urls>"],
+  "commands": {
+    "toggle-all-tabs": {
+      "description": "Toggle tab numbering for all tabs"
+    },
+    "toggle-current-tab": {
+      "description": "Toggle tab numbering for current tab"
+    }
+  }
 }

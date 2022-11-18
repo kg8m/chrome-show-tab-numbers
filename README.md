@@ -8,10 +8,10 @@ A Chromium extension to show tab numbers.
 
 ![Screenshot](assets/screenshot.png)
 
-Notes:
+Notable features:
 
 * This extension supports Google Chrome's collapsed tab group feature. Tabs belonging to a collapsed tab group are ignored.
-* If the current page is a PDF, this extension doesn't show a tab number because `document.title` returns `""` for a PDF document.
+* You can toggle tab numbering for all tabs or current tab via keyboard shortcuts.
 
 How to Install
 --------------------------------------------------
@@ -48,3 +48,20 @@ How to Release
    * Check a new release and its release notes on [Releases](/kg8m/chrome-show-tab-numbers/releases)
 1. Execute `make zip`
 1. Upload the built zip file to [Chrome Web Store](https://chrome.google.com/webstore/devconsole) and publish it
+
+Q&amp;A
+--------------------------------------------------
+
+### Q. Keyboard shortcuts don't work on Vivaldi; is this a bug in this extension?
+
+A. No, it is Vivaldi's bug. As a workaround, changing the shortcut to `Global` will solve the issue.
+
+cf. https://forum.vivaldi.net/topic/75247/extensions-keyboard-shortcuts-don-t-work/115
+
+> That is a known issue that can be fixed by changing the shortcut from `In Vivaldi` to `Global`.
+>
+> This can have some side effects if you use the same shortcut in other programs, so it might be helpful to also take a look at this workaround: [https://forum.vivaldi.net/topic/69541/guide-make-extension-keyboard-shortcuts-work-windows-10-11](https://forum.vivaldi.net/topic/69541/guide-make-extension-keyboard-shortcuts-work-windows-10-11)
+
+### Q. Tab number isn't shown if the tab is a PDF document; is this a bug in this extension?
+
+A. No, it is a limitation. If the current page is a PDF, `document.title` returns `""` for a PDF document. So this extension is disabled for avoid unintentional loss of the title.
