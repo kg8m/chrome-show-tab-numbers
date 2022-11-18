@@ -4,6 +4,18 @@ const COMMANDS = {
   "toggle-all-tabs": toggleAllTabs,
   "toggle-current-tab": toggleCurrentTab,
 };
+const CONTEXT_MENU = {
+  "chrome-show-tab-numbers-toggle-all-tabs": {
+    title: "Toggle tab numbering for all tabs",
+    callback: toggleAllTabs,
+  },
+  "chrome-show-tab-numbers-toggle-current-tab": {
+    title: "Toggle tab numbering for current tab",
+    callback: toggleCurrentTab,
+  },
+};
+
+createContextMenu();
 
 chrome.tabGroups.onCreated.addListener(requestToUpdateAll);
 chrome.tabGroups.onMoved.addListener(requestToUpdateAll);
@@ -16,6 +28,7 @@ chrome.tabs.onUpdated.addListener(requestToUpdateAll);
 
 chrome.tabs.onRemoved.addListener(onTabRemoved);
 chrome.commands.onCommand.addListener(onCommand);
+chrome.contextMenus.onClicked.addListener(onMenuClicked);
 
 const VALID_PROTOCOLS = new Set(["https:", "http:"]);
 const INVALID_HOSTNAMES = new Set(["chrome.google.com"]);
@@ -148,4 +161,19 @@ function onTabRemoved(tabId) {
 
 function onCommand(command) {
   COMMANDS[command]();
+}
+
+function createContextMenu() {
+  chrome.contextMenus.removeAll();
+  for (const menuItemId in CONTEXT_MENU) {
+    chrome.contextMenus.create({
+      contexts: ["action"],
+      id: menuItemId,
+      title: CONTEXT_MENU[menuItemId].title,
+    });
+  }
+}
+
+function onMenuClicked(info) {
+  CONTEXT_MENU[info.menuItemId].callback();
 }
