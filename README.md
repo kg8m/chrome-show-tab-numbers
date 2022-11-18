@@ -11,7 +11,7 @@ A Chromium extension to show tab numbers.
 Notable features:
 
 * This extension supports Google Chrome's collapsed tab group feature. Tabs belonging to a collapsed tab group are ignored.
-* You can toggle tab numbering for all tabs or current tab via keyboard shortcuts.
+* You can toggle tab numbering for all tabs or current tab via keyboard shortcuts or extension context menu.
 
 How to Install
 --------------------------------------------------
