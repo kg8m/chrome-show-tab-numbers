@@ -1,3 +1,10 @@
+const config = { enabled: true, disabledTabIds: new Set() };
+
+const COMMANDS = {
+  "toggle-all-tabs": toggleAllTabs,
+  "toggle-current-tab": toggleCurrentTab,
+};
+
 chrome.tabGroups.onCreated.addListener(requestToUpdateAll);
 chrome.tabGroups.onMoved.addListener(requestToUpdateAll);
 chrome.tabGroups.onRemoved.addListener(requestToUpdateAll);
@@ -7,6 +14,9 @@ chrome.tabs.onMoved.addListener(requestToUpdateAll);
 chrome.tabs.onRemoved.addListener(requestToUpdateAll);
 chrome.tabs.onUpdated.addListener(requestToUpdateAll);
 
+chrome.tabs.onRemoved.addListener(onTabRemoved);
+chrome.commands.onCommand.addListener(onCommand);
+
 const VALID_PROTOCOLS = new Set(["https:", "http:"]);
 const INVALID_HOSTNAMES = new Set(["chrome.google.com"]);
 const INVALID_PATHNAME_PATTERN = /\.pdf$/;
@@ -14,6 +24,10 @@ const INVALID_PATHNAME_PATTERN = /\.pdf$/;
 let timer = -1;
 
 function requestToUpdateAll() {
+  if (!config.enabled) {
+    return;
+  }
+
   clearTimeout(timer);
   timer = setTimeout(updateAll, 300);
 }
@@ -49,10 +63,13 @@ async function updateAll() {
     }
 
     if (isValidUrl(tab.url)) {
+      const isEnabled = config.enabled && !config.disabledTabIds.has(tab.id);
+      const number = tab.index + 1 + indexAdjuster;
+
       chrome.scripting.executeScript({
         target: { tabId: tab.id },
         func: updateOne,
-        args: [tab.index + 1 + indexAdjuster],
+        args: [{ isEnabled, number }],
       });
     }
   });
@@ -72,10 +89,14 @@ function isValidUrl(urlString) {
   );
 }
 
-function updateOne(number) {
+function updateOne({ isEnabled, number }) {
   const cache = document.showTabNumbers ?? {};
+  const isCacheAvailable =
+    isEnabled === cache.enabled &&
+    number === cache.number &&
+    document.title === cache.numberedTitle;
 
-  if (number === cache.number && document.title === cache.numberedTitle) {
+  if (isCacheAvailable) {
     return;
   }
 
@@ -85,8 +106,46 @@ function updateOne(number) {
     .replace(NUMBERED_PATTERN, "")
     .replace(NOTIFICATION_COUNT_PATTERN, "$1 ");
 
+  cache.enabled = isEnabled;
   cache.number = number;
-  cache.numberedTitle = `${number}. ${unnumberedTitle}`.trim();
+  cache.numberedTitle = (
+    cache.enabled ? `${number}. ${unnumberedTitle}` : unnumberedTitle
+  ).trim();
+
   document.title = cache.numberedTitle;
   document.showTabNumbers = cache;
+}
+
+function toggleAllTabs() {
+  config.enabled = !config.enabled;
+  updateAll();
+}
+
+async function toggleCurrentTab() {
+  const [currentTab] = await chrome.tabs.query({
+    active: true,
+    lastFocusedWindow: true,
+  });
+
+  const isDisabled = config.disabledTabIds.has(currentTab.id);
+
+  if (isDisabled) {
+    config.disabledTabIds.delete(currentTab.id);
+  } else {
+    config.disabledTabIds.add(currentTab.id);
+  }
+
+  updateAll();
+}
+
+function onTabRemoved(tabId) {
+  const isDisabled = config.disabledTabIds.has(tabId);
+
+  if (isDisabled) {
+    config.disabledTabIds.delete(tabId);
+  }
+}
+
+function onCommand(command) {
+  COMMANDS[command]();
 }
