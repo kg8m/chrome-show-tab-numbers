@@ -45,7 +45,7 @@ How to Release
 --------------------------------------------------
 
 1. Update the version: `make update-major`, `make update-minor`, or `make update-patch`
-   * Check a new release and its release notes on [Releases](/kg8m/chrome-show-tab-numbers/releases)
+   * Check a new release and its release notes on [Releases](https://github.com/kg8m/chrome-show-tab-numbers/releases)
 1. Execute `make zip`
 1. Upload the built zip file to [Chrome Web Store](https://chrome.google.com/webstore/devconsole) and publish it
 
