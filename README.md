@@ -1,5 +1,5 @@
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![lint](https://github.com/kg8m/chrome-show-tab-numbers/actions/workflows/lint.yml/badge.svg)](https://github.com/kg8m/chrome-show-tab-numbers/actions/workflows/lint.yml)
+[![checks](https://github.com/kg8m/chrome-show-tab-numbers/actions/workflows/checks.yml/badge.svg)](https://github.com/kg8m/chrome-show-tab-numbers/actions/workflows/checks.yml)
 
 chrome-show-tab-numbers
 ==================================================
