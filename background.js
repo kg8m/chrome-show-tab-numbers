@@ -64,7 +64,7 @@ async function updateAll() {
   }
 
   const collapsedTabGroupIds = new Set(
-    collapsedTabGroups.map((tabGroup) => tabGroup.id)
+    collapsedTabGroups.map((tabGroup) => tabGroup.id),
   );
 
   let indexAdjuster = 0;
