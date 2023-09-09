@@ -4,7 +4,7 @@
   "description": "A Chromium extension to show tab numbers.",
   "main": "background.js",
   "devDependencies": {
-    "eslint": "^8.48.0",
+    "eslint": "^8.49.0",
     "eslint-config-prettier": "^9.0.0",
     "prettier": "^3.0.3"
   },
