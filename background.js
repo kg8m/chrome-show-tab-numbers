@@ -48,18 +48,7 @@ function requestToUpdateAll() {
 async function updateAll() {
   const tabs = await chrome.tabs.query({ currentWindow: true });
 
-  let collapsedTabGroups;
-  try {
-    collapsedTabGroups = await chrome.tabGroups.query({
-      windowId: chrome.windows.WINDOW_ID_CURRENT,
-      collapsed: true,
-    });
-  } catch (error) {
-    if (error.message.includes("Grouping is not supported by tabs")) {
-      return;
-    }
-  }
-
+  const collapsedTabGroups = await findCollapsedTabGroups();
   const collapsedTabGroupIds = new Set(
     collapsedTabGroups.map((tabGroup) => tabGroup.id),
   );
@@ -83,6 +72,19 @@ async function updateAll() {
       });
     }
   });
+}
+
+async function findCollapsedTabGroups() {
+  try {
+    return await chrome.tabGroups.query({
+      windowId: chrome.windows.WINDOW_ID_CURRENT,
+      collapsed: true,
+    });
+  } catch (error) {
+    if (error.message.includes("Grouping is not supported by tabs")) {
+      return [];
+    }
+  }
 }
 
 function isValidUrl(urlString) {
