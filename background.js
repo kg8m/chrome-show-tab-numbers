@@ -46,10 +46,7 @@ function requestToUpdateAll() {
 }
 
 async function updateAll() {
-  const tabs = await chrome.tabs.query({
-    currentWindow: true,
-    discarded: false,
-  });
+  const tabs = await chrome.tabs.query({ currentWindow: true });
 
   let collapsedTabGroups;
   try {
