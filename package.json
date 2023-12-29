@@ -10,8 +10,8 @@
   },
   "scripts": {
     "lint": "eslint .*.js *.js",
-    "format": "eslint --fix .*.js *.js && prettier --write .*.js *.js manifest.json package.json *.md",
-    "format-check": "prettier --check .*.js *.js manifest.json package.json *.md"
+    "format": "eslint --fix .*.js *.js && prettier --write .",
+    "format-check": "prettier --check ."
   },
   "repository": {
     "type": "git",
