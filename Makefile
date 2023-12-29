@@ -2,7 +2,7 @@
 HELP_SEPARATOR := ＠
 
 PACKAGE_NAME := chrome-show-tab-numbers
-PACKAGE_TARGETS := manifest.json background.js assets/icon128.png
+PACKAGE_TARGETS := manifest.json background.js options.html options.js assets/icon128.png
 
 .PHONY: help
 help:  ## Show help
