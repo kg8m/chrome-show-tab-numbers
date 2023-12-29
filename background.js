@@ -1,5 +1,9 @@
 const config = { enabled: true, disabledTabIds: new Set() };
 
+const storage = {
+  get: async (key) => (await chrome.storage.sync.get([key]))[key],
+};
+
 const COMMANDS = {
   "toggle-all-tabs": toggleAllTabs,
   "toggle-current-tab": toggleCurrentTab,
@@ -17,10 +21,12 @@ const CONTEXT_MENU = {
 
 createContextMenu();
 
+chrome.storage.onChanged.addListener(requestToUpdateAll);
 chrome.tabGroups.onCreated.addListener(requestToUpdateAll);
 chrome.tabGroups.onMoved.addListener(requestToUpdateAll);
 chrome.tabGroups.onRemoved.addListener(requestToUpdateAll);
 chrome.tabGroups.onUpdated.addListener(requestToUpdateAll);
+chrome.tabs.onActivated.addListener(requestToUpdateAll);
 chrome.tabs.onCreated.addListener(requestToUpdateAll);
 chrome.tabs.onMoved.addListener(requestToUpdateAll);
 chrome.tabs.onRemoved.addListener(requestToUpdateAll);
@@ -53,25 +59,15 @@ async function updateAll() {
     collapsedTabGroups.map((tabGroup) => tabGroup.id),
   );
 
-  let indexAdjuster = 0;
-
   tabs.sort((tab1, tab2) => tab1.index - tab2.index);
-  tabs.forEach((tab) => {
-    if (collapsedTabGroupIds.has(tab.groupId)) {
-      indexAdjuster--;
-    }
 
-    if (isValidUrl(tab.url)) {
-      const isEnabled = config.enabled && !config.disabledTabIds.has(tab.id);
-      const number = tab.index + 1 + indexAdjuster;
+  const useRelativeNumber = await storage.get("useRelativeNumber");
 
-      chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        func: updateOne,
-        args: [{ isEnabled, number }],
-      });
-    }
-  });
+  if (useRelativeNumber) {
+    updateRelativeNumbers(tabs, { collapsedTabGroupIds });
+  } else {
+    updateAbsoluteNumbers(tabs, { collapsedTabGroupIds });
+  }
 }
 
 async function findCollapsedTabGroups() {
@@ -84,6 +80,56 @@ async function findCollapsedTabGroups() {
     if (error.message.includes("Grouping is not supported by tabs")) {
       return [];
     }
+  }
+}
+
+function updateRelativeNumbers(tabs, { collapsedTabGroupIds }) {
+  let relativeNumber = 0;
+
+  for (const tab of tabs) {
+    if (tab.active) {
+      break;
+    } else {
+      if (!collapsedTabGroupIds.has(tab.groupId)) {
+        relativeNumber--;
+      }
+    }
+  }
+
+  let absoluteNumber = 1;
+
+  for (const tab of tabs) {
+    if (collapsedTabGroupIds.has(tab.groupId)) {
+      continue;
+    }
+
+    if (isValidUrl(tab.url)) {
+      if (tab.active) {
+        requestToUpdateOne({ tab, number: absoluteNumber });
+      } else {
+        const number = `${relativeNumber < 0 ? "" : "+"}${relativeNumber}`;
+        requestToUpdateOne({ tab, number });
+      }
+    }
+
+    absoluteNumber++;
+    relativeNumber++;
+  }
+}
+
+function updateAbsoluteNumbers(tabs, { collapsedTabGroupIds }) {
+  let number = 1;
+
+  for (const tab of tabs) {
+    if (collapsedTabGroupIds.has(tab.groupId)) {
+      continue;
+    }
+
+    if (isValidUrl(tab.url)) {
+      requestToUpdateOne({ tab, number });
+    }
+
+    number++;
   }
 }
 
@@ -101,6 +147,16 @@ function isValidUrl(urlString) {
   );
 }
 
+function requestToUpdateOne({ tab, number }) {
+  const isEnabled = config.enabled && !config.disabledTabIds.has(tab.id);
+
+  chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    func: updateOne,
+    args: [{ isEnabled, number }],
+  });
+}
+
 function updateOne({ isEnabled, number }) {
   const cache = document.showTabNumbers ?? {};
   const isCacheAvailable =
@@ -112,8 +168,8 @@ function updateOne({ isEnabled, number }) {
     return;
   }
 
-  const NUMBERED_PATTERN = /^\d+\. ?/;
-  const NOTIFICATION_COUNT_PATTERN = /^(\(\d+\)) \d+\. (?:\(\d+\) )?/;
+  const NUMBERED_PATTERN = /^[-+]?\d+\. ?/;
+  const NOTIFICATION_COUNT_PATTERN = /^(\(\d+\)) [-+]?\d+\. (?:\(\d+\) )?/;
   const unnumberedTitle = document.title
     .replace(NUMBERED_PATTERN, "")
     .replace(NOTIFICATION_COUNT_PATTERN, "$1 ");

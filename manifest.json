@@ -9,7 +9,11 @@
   "background": {
     "service_worker": "background.js"
   },
-  "permissions": ["contextMenus", "scripting", "tabGroups", "tabs"],
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": false
+  },
+  "permissions": ["contextMenus", "scripting", "storage", "tabGroups", "tabs"],
   "host_permissions": ["<all_urls>"],
   "commands": {
     "toggle-all-tabs": {
