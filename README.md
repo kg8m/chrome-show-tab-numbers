@@ -1,8 +1,7 @@
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![checks](https://github.com/kg8m/chrome-show-tab-numbers/actions/workflows/checks.yml/badge.svg)](https://github.com/kg8m/chrome-show-tab-numbers/actions/workflows/checks.yml)
 
-chrome-show-tab-numbers
-==================================================
+# chrome-show-tab-numbers
 
 A Chromium extension to show tab numbers.
 
@@ -10,12 +9,11 @@ A Chromium extension to show tab numbers.
 
 Notable features:
 
-* This extension supports Google Chrome's collapsed tab group feature. Tabs belonging to a collapsed tab group are ignored.
-* You can toggle tab numbering for all tabs or current tab via keyboard shortcuts or extension context menu.
-* Tab numbers can be relative, displaying the current tab's absolute number and indicating the position of other tabs relative to it ― how many tabs they are ahead or behind the current one.
+- This extension supports Google Chrome's collapsed tab group feature. Tabs belonging to a collapsed tab group are ignored.
+- You can toggle tab numbering for all tabs or current tab via keyboard shortcuts or extension context menu.
+- Tab numbers can be relative, displaying the current tab's absolute number and indicating the position of other tabs relative to it ― how many tabs they are ahead or behind the current one.
 
-How to Install
---------------------------------------------------
+## How to Install
 
 ### From Chrome Web Store
 
@@ -29,8 +27,7 @@ https://chrome.google.com/webstore/detail/pflnpcinjbcfefgbejjfanemlgcfjbna
 1. Click "Load unpacked"
 1. Select the downloaded directory
 
-How to Develop
---------------------------------------------------
+## How to Develop
 
 1. Clone this repository
 1. Go to the cloned directory
@@ -42,16 +39,14 @@ How to Develop
 1. Format the source codes: `make fix`
 1. Create a pull request
 
-How to Release
---------------------------------------------------
+## How to Release
 
 1. Update the version: `make update-major`, `make update-minor`, or `make update-patch`
-   * Check a new release and its release notes on [Releases](https://github.com/kg8m/chrome-show-tab-numbers/releases)
+   - Check a new release and its release notes on [Releases](https://github.com/kg8m/chrome-show-tab-numbers/releases)
 1. Execute `make zip`
 1. Upload the built zip file to [Chrome Web Store](https://chrome.google.com/webstore/devconsole) and publish it
 
-Q&amp;A
---------------------------------------------------
+## Q&amp;A
 
 ### Q. Keyboard shortcuts don't work on Vivaldi; is this a bug in this extension?
 
