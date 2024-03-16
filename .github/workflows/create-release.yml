@@ -10,7 +10,7 @@ jobs:
     name: Create GitHub Release
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4.1.2
+      - uses: actions/checkout@v4
       - name: Create release
         run: >-
           latest_tag="$(git describe --tags --abbrev=0)";
