@@ -107,7 +107,7 @@ function updateRelativeNumbers(tabs, { collapsedTabGroupIds }) {
       if (tab.active) {
         requestToUpdateOne({ tab, number: absoluteNumber });
       } else {
-        const number = `${relativeNumber < 0 ? "" : "+"}${relativeNumber}`;
+        const number = Math.abs(relativeNumber);
         requestToUpdateOne({ tab, number });
       }
     }
@@ -168,6 +168,8 @@ function updateOne({ isEnabled, number }) {
     return;
   }
 
+  // TODO: Remove the signs `-` and `+` from this pattern.
+  //       Currently, remain them for backward compatibility.
   const NUMBERED_PATTERN = /^[-+]?\d+\. ?/;
   const NOTIFICATION_COUNT_PATTERN = /^(\(\d+\)) [-+]?\d+\. (?:\(\d+\) )?/;
   const unnumberedTitle = document.title
