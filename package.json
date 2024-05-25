@@ -3,13 +3,15 @@
   "version": "1.4.0",
   "description": "A Chromium extension to show tab numbers.",
   "main": "background.js",
+  "type": "module",
   "devDependencies": {
-    "eslint": "^8.57.0",
+    "eslint": "^9.3.0",
     "eslint-config-prettier": "^9.1.0",
+    "globals": "^15.3.0",
     "prettier": "^3.2.5"
   },
   "scripts": {
-    "lint": "eslint .*.js *.js",
+    "lint": "eslint *.js",
     "format": "eslint --fix .*.js *.js && prettier --write .",
     "format-check": "prettier --check ."
   },
