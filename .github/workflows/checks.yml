@@ -14,7 +14,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "19.0.0"
+          node-version: "22.2.0"
           cache: npm
       - run: npm install
       - run: make lint
@@ -25,7 +25,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "19.0.0"
+          node-version: "22.2.0"
           cache: npm
       - run: npm install
       - run: make format-check
