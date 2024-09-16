@@ -171,8 +171,6 @@ function updateOne({ isEnabled, number }) {
     return;
   }
 
-  // TODO: Remove the signs `-` and `+` from this pattern.
-  //       Currently, remain them for backward compatibility.
   const NUMBERED_PATTERN = /^[-+]?\d+\. ?/;
   const NOTIFICATION_COUNT_PATTERN = /^(\(\d+\)) [-+]?\d+\. (?:\(\d+\) )?/;
   const unnumberedTitle = document.title
