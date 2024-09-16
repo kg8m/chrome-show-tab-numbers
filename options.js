@@ -5,7 +5,10 @@ const storage = {
 
 document.addEventListener("DOMContentLoaded", async () => {
   await restore();
+  syncUi();
+
   findRelativeNumberToggler().addEventListener("change", save);
+  findRelativeNumberToggler().addEventListener("change", syncUi);
   findRelativeNumberSignToggler().addEventListener("change", save);
 });
 
@@ -26,6 +29,19 @@ async function save(event) {
   if (event.target.id === "relative-number-sign-toggler") {
     const useRelativeNumberSign = findRelativeNumberSignToggler().checked;
     await storage.set({ useRelativeNumberSign });
+  }
+}
+
+function syncUi() {
+  const relativeNumberToggler = findRelativeNumberToggler();
+  const relativeNumberSignToggler = findRelativeNumberSignToggler();
+
+  if (relativeNumberToggler.checked) {
+    relativeNumberSignToggler.disabled = false;
+    relativeNumberSignToggler.closest("label").ariaDisabled = false;
+  } else {
+    relativeNumberSignToggler.disabled = true;
+    relativeNumberSignToggler.closest("label").ariaDisabled = true;
   }
 }
 
