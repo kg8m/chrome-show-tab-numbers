@@ -64,7 +64,7 @@ async function updateAll() {
   const useRelativeNumber = await storage.get("useRelativeNumber");
 
   if (useRelativeNumber) {
-    updateRelativeNumbers(tabs, { collapsedTabGroupIds });
+    await updateRelativeNumbers(tabs, { collapsedTabGroupIds });
   } else {
     updateAbsoluteNumbers(tabs, { collapsedTabGroupIds });
   }
@@ -83,7 +83,7 @@ async function findCollapsedTabGroups() {
   }
 }
 
-function updateRelativeNumbers(tabs, { collapsedTabGroupIds }) {
+async function updateRelativeNumbers(tabs, { collapsedTabGroupIds }) {
   let relativeNumber = 0;
 
   for (const tab of tabs) {
@@ -96,6 +96,7 @@ function updateRelativeNumbers(tabs, { collapsedTabGroupIds }) {
     }
   }
 
+  const useRelativeNumberSign = await storage.get("useRelativeNumberSign");
   let absoluteNumber = 1;
 
   for (const tab of tabs) {
@@ -107,7 +108,9 @@ function updateRelativeNumbers(tabs, { collapsedTabGroupIds }) {
       if (tab.active) {
         requestToUpdateOne({ tab, number: absoluteNumber });
       } else {
-        const number = Math.abs(relativeNumber);
+        const number = useRelativeNumberSign
+          ? `${relativeNumber < 0 ? "" : "+"}${relativeNumber}`
+          : Math.abs(relativeNumber);
         requestToUpdateOne({ tab, number });
       }
     }
