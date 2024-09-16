@@ -3,11 +3,19 @@
   <head>
     <meta charset="UTF-8" />
     <title>Options</title>
+
+    <style>
+      #fields > label {
+        display: flex;
+        align-items: center;
+        gap: 0.25em;
+      }
+    </style>
   </head>
 
   <body>
-    <div>
-      <label style="display: flex; align-items: center; gap: 0.25em">
+    <div id="fields">
+      <label>
         <input type="checkbox" id="relative-number-toggler" />
         Use relative number
       </label>
