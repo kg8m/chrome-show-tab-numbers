@@ -9,7 +9,10 @@ function check_version_consistency {
   local manifest_version="$(extract_version manifest.json)"
   local package_version="$(extract_version package.json)"
 
-  if [ ! "${manifest_version}" = "${package_version}" ]; then
+  if [ -z "${manifest_version}" ] ||
+     [ -z "${package_version}" ] ||
+     [ ! "${manifest_version}" = "${package_version}" ]; then
+
     fail "version mismatch in manifest.json and package.json"
   fi
 }
