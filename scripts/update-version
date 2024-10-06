@@ -60,7 +60,7 @@ npm install
 
 # Apply version changes.
 git add --patch -- manifest.json package.json package-lock.json
-git commit --message "Bump up version"
+git commit --message "Bump up version from ${current_version} to ${next_version}"
 git push
 
 # Create a new tag.
