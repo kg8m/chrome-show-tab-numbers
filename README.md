@@ -29,10 +29,11 @@ https://chrome.google.com/webstore/detail/pflnpcinjbcfefgbejjfanemlgcfjbna
 
 ## How to Develop
 
-1. Clone this repository
+1. Fork this repository
+1. Clone your forked repository
 1. Go to the cloned directory
+1. (Create a branch)
 1. Execute `npm install`
-1. Create a branch
 1. Edit source codes
 1. Lint the source codes: `make lint`
 1. (Fix lint errors and retry executing `make lint`)
