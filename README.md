@@ -21,10 +21,10 @@ https://chrome.google.com/webstore/detail/pflnpcinjbcfefgbejjfanemlgcfjbna
 
 ### From Source
 
-1. Download and unzip this repository
+1. Download (and unzip) this repository
 1. Open the extensions of your browser
-1. Enable "Developer mode"
-1. Click "Load unpacked"
+1. Enable “Developer mode”
+1. Click “Load unpacked”
 1. Select the downloaded directory
 
 ## How to Develop
@@ -33,19 +33,19 @@ https://chrome.google.com/webstore/detail/pflnpcinjbcfefgbejjfanemlgcfjbna
 1. Clone your forked repository
 1. Go to the cloned directory
 1. (Create a branch)
-1. Execute `npm install`
-1. Edit source codes
-1. Lint the source codes: `make lint`
-1. (Fix lint errors and retry executing `make lint`)
-1. Format the source codes: `make fix`
+1. Run `npm install`
+1. Make changes to the source code
+1. Lint the code: `make lint`
+1. (Fix lint errors and rerun `make lint`)
+1. Format the code: `make fix`
 1. Create a pull request
 
 ## How to Release
 
 1. Update the version: `make update-major`, `make update-minor`, or `make update-patch`
-   - Check a new release and its release notes on [Releases](https://github.com/kg8m/chrome-show-tab-numbers/releases)
-1. Execute `make zip`
-1. Upload the built zip file to [Chrome Web Store](https://chrome.google.com/webstore/devconsole) and publish it
+   - A new release and its release notes will be generated automatically. Review them on the [Releases](https://github.com/kg8m/chrome-show-tab-numbers/releases) page
+1. Run `make zip` to build a zip file
+1. Upload the built zip file to the [Chrome Web Store](https://chrome.google.com/webstore/devconsole) and publish it
 
 ## Q&amp;A
 
