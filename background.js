@@ -38,7 +38,6 @@ chrome.contextMenus.onClicked.addListener(onMenuClicked);
 
 const VALID_PROTOCOLS = new Set(["https:", "http:"]);
 const INVALID_HOSTNAMES = new Set(["chrome.google.com"]);
-const INVALID_PATHNAME_PATTERN = /\.pdf$/;
 
 let timer = -1;
 
@@ -145,22 +144,23 @@ function isValidUrl(urlString) {
 
   return (
     VALID_PROTOCOLS.has(url.protocol) &&
-    !INVALID_HOSTNAMES.has(url.hostname) &&
-    !INVALID_PATHNAME_PATTERN.test(url.pathname)
+    !INVALID_HOSTNAMES.has(url.hostname)
   );
 }
 
 function requestToUpdateOne({ tab, number }) {
   const isEnabled = config.enabled && !config.disabledTabIds.has(tab.id);
-
-  chrome.scripting.executeScript({
-    target: { tabId: tab.id },
-    func: updateOne,
-    args: [{ isEnabled, number }],
+  chrome.tabs.query({}, (tabs) => {
+    const tabName = tabs.find(t => t.id === tab.id).title;
+    chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: updateOne,
+      args: [{ isEnabled, number, tabName }],
+    });
   });
 }
 
-function updateOne({ isEnabled, number }) {
+function updateOne({ isEnabled, number, tabName }) {
   const cache = document.showTabNumbers ?? {};
   const isCacheAvailable =
     isEnabled === cache.enabled &&
@@ -173,7 +173,7 @@ function updateOne({ isEnabled, number }) {
 
   const NUMBERED_PATTERN = /^[-+]?\d+\. ?/;
   const NOTIFICATION_COUNT_PATTERN = /^(\(\d+\)) [-+]?\d+\. (?:\(\d+\) )?/;
-  const unnumberedTitle = document.title
+  const unnumberedTitle = tabName
     .replace(NUMBERED_PATTERN, "")
     .replace(NOTIFICATION_COUNT_PATTERN, "$1 ");
 
