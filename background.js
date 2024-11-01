@@ -165,7 +165,7 @@ function updateOne({ isEnabled, number, tabName }) {
   const isCacheAvailable =
     isEnabled === cache.enabled &&
     number === cache.number &&
-    document.title === cache.numberedTitle;
+    tabName === cache.numberedTitle;
 
   if (isCacheAvailable) {
     return;
