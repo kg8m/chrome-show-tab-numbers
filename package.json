@@ -12,7 +12,7 @@
   },
   "scripts": {
     "lint": "eslint *.js",
-    "format": "eslint --fix .*.js *.js && prettier --write .",
+    "format": "eslint --fix *.js && prettier --write .",
     "format-check": "prettier --check ."
   },
   "repository": {
