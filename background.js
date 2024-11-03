@@ -149,13 +149,12 @@ function isValidUrl(urlString) {
 
 function requestToUpdateOne({ tab, number }) {
   const isEnabled = config.enabled && !config.disabledTabIds.has(tab.id);
-  chrome.tabs.query({}, (tabs) => {
-    const tabName = tabs.find((t) => t.id === tab.id).title;
-    chrome.scripting.executeScript({
-      target: { tabId: tab.id },
-      func: updateOne,
-      args: [{ isEnabled, number, tabName }],
-    });
+  const tabName = tab.title;
+
+  chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    func: updateOne,
+    args: [{ isEnabled, number, tabName }],
   });
 }
 
