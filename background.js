@@ -143,15 +143,14 @@ function isValidUrl(urlString) {
   const url = new URL(urlString);
 
   return (
-    VALID_PROTOCOLS.has(url.protocol) &&
-    !INVALID_HOSTNAMES.has(url.hostname)
+    VALID_PROTOCOLS.has(url.protocol) && !INVALID_HOSTNAMES.has(url.hostname)
   );
 }
 
 function requestToUpdateOne({ tab, number }) {
   const isEnabled = config.enabled && !config.disabledTabIds.has(tab.id);
   chrome.tabs.query({}, (tabs) => {
-    const tabName = tabs.find(t => t.id === tab.id).title;
+    const tabName = tabs.find((t) => t.id === tab.id).title;
     chrome.scripting.executeScript({
       target: { tabId: tab.id },
       func: updateOne,
