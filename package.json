@@ -5,8 +5,8 @@
   "main": "background.js",
   "type": "module",
   "devDependencies": {
-    "eslint": "^9.21.0",
-    "eslint-config-prettier": "^10.0.2",
+    "eslint": "^9.22.0",
+    "eslint-config-prettier": "^10.1.1",
     "globals": "^16.0.0",
     "prettier": "^3.5.2"
   },
