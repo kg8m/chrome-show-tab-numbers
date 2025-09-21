@@ -3,6 +3,7 @@ let config = {
   disabledTabIds: new Set(),
   useRelativeNumber: false,
   useRelativeNumberSign: false,
+  hideIndexesLargerThan10: false,
 };
 
 chrome.storage.sync.get(null).then((storedConfig) => {
@@ -142,14 +143,21 @@ function updateRelativeNumbers(tabs, { collapsedTabGroupIds }) {
 
 function updateAbsoluteNumbers(tabs, { collapsedTabGroupIds }) {
   let number = 1;
+  tabs = tabs.filter((tab) => !collapsedTabGroupIds.has(tab.groupId));
 
   for (const tab of tabs) {
-    if (collapsedTabGroupIds.has(tab.groupId)) {
-      continue;
+    let displayNumber = number;
+
+    if (config.hideIndexesLargerThan10 && number > 8) {
+      if (tabs.length === number) {
+        displayNumber = 9;
+      } else {
+        displayNumber = null;
+      }
     }
 
     if (isValidUrl(tab.url)) {
-      requestToUpdateOne({ tab, number });
+      requestToUpdateOne({ tab, number: displayNumber });
     }
 
     number++;
@@ -199,7 +207,7 @@ function updateOne({ isEnabled, number, tabName }) {
   cache.enabled = isEnabled;
   cache.number = number;
   cache.numberedTitle = (
-    cache.enabled ? `${number}. ${unnumberedTitle}` : unnumberedTitle
+    cache.enabled && number ? `${number}. ${unnumberedTitle}` : unnumberedTitle
   ).trim();
 
   document.title = cache.numberedTitle;
