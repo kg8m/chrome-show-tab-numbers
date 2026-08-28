@@ -1,8 +1,15 @@
-const config = { enabled: true, disabledTabIds: new Set() };
-
-const storage = {
-  get: async (key) => (await chrome.storage.sync.get([key]))[key],
+let config = {
+  enabled: true,
+  disabledTabIds: new Set(),
+  useRelativeNumber: false,
+  useRelativeNumberSign: false,
+  hideIndexesLargerThan10: false,
 };
+
+chrome.storage.sync.get(null).then((storedConfig) => {
+  config = { ...config, ...storedConfig };
+  requestToUpdateAll();
+});
 
 const COMMANDS = {
   "toggle-all-tabs": toggleAllTabs,
@@ -21,7 +28,13 @@ const CONTEXT_MENU = {
 
 createContextMenu();
 
-chrome.storage.onChanged.addListener(requestToUpdateAll);
+chrome.storage.onChanged.addListener((changes) => {
+  for (const [key, { newValue }] of Object.entries(changes)) {
+    config[key] = newValue;
+  }
+
+  requestToUpdateAll();
+});
 chrome.tabGroups.onCreated.addListener(requestToUpdateAll);
 chrome.tabGroups.onMoved.addListener(requestToUpdateAll);
 chrome.tabGroups.onRemoved.addListener(requestToUpdateAll);
@@ -39,31 +52,41 @@ chrome.contextMenus.onClicked.addListener(onMenuClicked);
 const VALID_PROTOCOLS = new Set(["https:", "http:"]);
 const INVALID_HOSTNAMES = new Set(["chrome.google.com"]);
 
-let timer = -1;
+let abortController = new AbortController();
 
 function requestToUpdateAll() {
   if (!config.enabled) {
     return;
   }
 
-  clearTimeout(timer);
-  timer = setTimeout(updateAll, 300);
+  abortController.abort();
+  abortController = new AbortController();
+
+  abortable(updateAll, abortController.signal);
+}
+
+function abortable(fn, signal) {
+  return new Promise((resolve, reject) => {
+    signal.addEventListener("abort", () => resolve());
+
+    fn().then(resolve, reject);
+  });
 }
 
 async function updateAll() {
-  const tabs = await chrome.tabs.query({ currentWindow: true });
+  const [tabs, collapsedTabGroups] = await Promise.all([
+    chrome.tabs.query({ currentWindow: true }),
+    findCollapsedTabGroups(),
+  ]);
 
-  const collapsedTabGroups = await findCollapsedTabGroups();
   const collapsedTabGroupIds = new Set(
-    collapsedTabGroups.map((tabGroup) => tabGroup.id),
+    collapsedTabGroups.map((tabGroup) => tabGroup.id)
   );
 
   tabs.sort((tab1, tab2) => tab1.index - tab2.index);
 
-  const useRelativeNumber = await storage.get("useRelativeNumber");
-
-  if (useRelativeNumber) {
-    await updateRelativeNumbers(tabs, { collapsedTabGroupIds });
+  if (config.useRelativeNumber) {
+    updateRelativeNumbers(tabs, { collapsedTabGroupIds });
   } else {
     updateAbsoluteNumbers(tabs, { collapsedTabGroupIds });
   }
@@ -82,7 +105,7 @@ async function findCollapsedTabGroups() {
   }
 }
 
-async function updateRelativeNumbers(tabs, { collapsedTabGroupIds }) {
+function updateRelativeNumbers(tabs, { collapsedTabGroupIds }) {
   let relativeNumber = 0;
 
   for (const tab of tabs) {
@@ -95,7 +118,6 @@ async function updateRelativeNumbers(tabs, { collapsedTabGroupIds }) {
     }
   }
 
-  const useRelativeNumberSign = await storage.get("useRelativeNumberSign");
   let absoluteNumber = 1;
 
   for (const tab of tabs) {
@@ -107,7 +129,7 @@ async function updateRelativeNumbers(tabs, { collapsedTabGroupIds }) {
       if (tab.active) {
         requestToUpdateOne({ tab, number: absoluteNumber });
       } else {
-        const number = useRelativeNumberSign
+        const number = config.useRelativeNumberSign
           ? `${relativeNumber < 0 ? "" : "+"}${relativeNumber}`
           : Math.abs(relativeNumber);
         requestToUpdateOne({ tab, number });
@@ -121,14 +143,21 @@ async function updateRelativeNumbers(tabs, { collapsedTabGroupIds }) {
 
 function updateAbsoluteNumbers(tabs, { collapsedTabGroupIds }) {
   let number = 1;
+  tabs = tabs.filter((tab) => !collapsedTabGroupIds.has(tab.groupId));
 
   for (const tab of tabs) {
-    if (collapsedTabGroupIds.has(tab.groupId)) {
-      continue;
+    let displayNumber = number;
+
+    if (config.hideIndexesLargerThan10 && number > 8) {
+      if (tabs.length === number) {
+        displayNumber = 9;
+      } else {
+        displayNumber = null;
+      }
     }
 
     if (isValidUrl(tab.url)) {
-      requestToUpdateOne({ tab, number });
+      requestToUpdateOne({ tab, number: displayNumber });
     }
 
     number++;
@@ -178,7 +207,7 @@ function updateOne({ isEnabled, number, tabName }) {
   cache.enabled = isEnabled;
   cache.number = number;
   cache.numberedTitle = (
-    cache.enabled ? `${number}. ${unnumberedTitle}` : unnumberedTitle
+    cache.enabled && number ? `${number}. ${unnumberedTitle}` : unnumberedTitle
   ).trim();
 
   document.title = cache.numberedTitle;
