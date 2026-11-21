@@ -14,10 +14,10 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@v7.1.0
         with:
           node-version-file: .node-version
           cache: npm
@@ -27,13 +27,35 @@ jobs:
   format-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@v7.1.0
         with:
           node-version-file: .node-version
           cache: npm
       - run: npm ci
       - run: make format-check
+    timeout-minutes: 5
+  actions-lock-verification:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      # https://github.com/github/gh-actions-lock
+      # Don’t pin the extension version because neither `.github/workflows/actions.lock` nor Dependabot updates it, and
+      # its checks should follow the runner’s ones.
+      - name: Install gh-actions-lock
+        run: gh extension install github/gh-actions-lock
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      # Report a stale lockfile in pull request checks because runs blocked by the “Require lockfile” policy only
+      # result in `startup_failure`, which doesn’t appear in pull request checks.
+      - name: Verify actions lockfile
+        run: gh actions-lock --verify
+        env:
+          GH_TOKEN: ${{ github.token }}
     timeout-minutes: 5
