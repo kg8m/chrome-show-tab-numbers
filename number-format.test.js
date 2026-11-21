@@ -107,6 +107,19 @@ describe("NUMBERED_PATTERN and NOTIFICATION_COUNT_PATTERN", () => {
     assert.equal(removeNumber("(1) ② (1) Title"), "(1) Title");
   });
 
+  it("removes a number without the original title after a notification count in any format", () => {
+    for (const format of Object.keys(NUMBER_FORMATS)) {
+      for (const sign of ["", "-", "+"]) {
+        const numbered = formatNumber(1, { format, sign });
+        assert.equal(
+          removeNumber(`(1) ${numbered}`),
+          "(1) ",
+          `${format} ${sign}1`,
+        );
+      }
+    }
+  });
+
   it("doesn’t change a title with only a notification count", () => {
     assert.equal(removeNumber("(1) Title"), "(1) Title");
   });

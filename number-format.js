@@ -43,8 +43,9 @@ export const NUMBERED_PATTERN = new RegExp(
 
 // Match a number between a notification count and the original title, e.g., `(1) 2. Title`, which is caused by a page
 // adding a notification count to the numbered title. A notification count added again by the page is also matched,
-// e.g., `(1) 2. (1) Title`.
+// e.g., `(1) 2. (1) Title`. The end of a title is also accepted after a number for the same reason as
+// `NUMBERED_PATTERN`, e.g., `(1) ①`.
 export const NOTIFICATION_COUNT_PATTERN = new RegExp(
-  `^(\\(\\d+\\)) [-+]?(?:\\d+\\.|${SYMBOLS_SOURCE}) (?:\\(\\d+\\) )?`,
+  `^(\\(\\d+\\)) [-+]?(?:\\d+\\.|${SYMBOLS_SOURCE})(?: |$)(?:\\(\\d+\\) )?`,
   "u",
 );
