@@ -23,6 +23,10 @@ format:  ## Format files
 format-check:  ## Check if files are formatted
 	npm run format-check
 
+.PHONY: test
+test:  ## Run tests
+	npm test
+
 .PHONY: update-major
 update-major:  ## Update the major version
 	scripts/update-version major

@@ -15,7 +15,8 @@
   "scripts": {
     "lint": "eslint *.js",
     "format": "eslint --fix *.js && prettier --write .",
-    "format-check": "prettier --check ."
+    "format-check": "prettier --check .",
+    "test": "node --test"
   },
   "repository": {
     "type": "git",

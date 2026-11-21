@@ -37,6 +37,8 @@ https://chrome.google.com/webstore/detail/pflnpcinjbcfefgbejjfanemlgcfjbna
 1. Make changes to the source code
 1. Lint the code: `make lint`
 1. (Fix lint errors and rerun `make lint`)
+1. Run tests: `make test`
+1. (Fix failures and rerun `make test`)
 1. Format the code: `make fix`
 1. Create a pull request
 
