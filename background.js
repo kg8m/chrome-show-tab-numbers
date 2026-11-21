@@ -1,7 +1,21 @@
-const config = { enabled: true, disabledTabIds: new Set() };
-
 const storage = {
   get: async (key) => (await chrome.storage.sync.get([key]))[key],
+};
+
+// Store the toggle state in the session storage because the service worker is terminated when idle and its variables
+// are reset. Tab IDs are valid only within a browser session, so the state doesn’t need to persist across sessions.
+const toggleStateStorage = {
+  get: async () => {
+    const { enabled = true, disabledTabIds = [] } =
+      await chrome.storage.session.get(["enabled", "disabledTabIds"]);
+
+    return { enabled, disabledTabIds: new Set(disabledTabIds) };
+  },
+  set: async ({ enabled, disabledTabIds }) =>
+    await chrome.storage.session.set({
+      enabled,
+      disabledTabIds: [...disabledTabIds],
+    }),
 };
 
 const COMMANDS = {
@@ -41,8 +55,10 @@ const INVALID_HOSTNAMES = new Set(["chrome.google.com"]);
 
 let timer = -1;
 
-function requestToUpdateAll() {
-  if (!config.enabled) {
+async function requestToUpdateAll() {
+  const { enabled } = await toggleStateStorage.get();
+
+  if (!enabled) {
     return;
   }
 
@@ -60,12 +76,13 @@ async function updateAll() {
 
   tabs.sort((tab1, tab2) => tab1.index - tab2.index);
 
+  const toggleState = await toggleStateStorage.get();
   const useRelativeNumber = await storage.get("useRelativeNumber");
 
   if (useRelativeNumber) {
-    await updateRelativeNumbers(tabs, { collapsedTabGroupIds });
+    await updateRelativeNumbers(tabs, { collapsedTabGroupIds, toggleState });
   } else {
-    updateAbsoluteNumbers(tabs, { collapsedTabGroupIds });
+    updateAbsoluteNumbers(tabs, { collapsedTabGroupIds, toggleState });
   }
 }
 
@@ -82,7 +99,10 @@ async function findCollapsedTabGroups() {
   }
 }
 
-async function updateRelativeNumbers(tabs, { collapsedTabGroupIds }) {
+async function updateRelativeNumbers(
+  tabs,
+  { collapsedTabGroupIds, toggleState },
+) {
   let relativeNumber = 0;
 
   for (const tab of tabs) {
@@ -105,12 +125,12 @@ async function updateRelativeNumbers(tabs, { collapsedTabGroupIds }) {
 
     if (isValidUrl(tab.url)) {
       if (tab.active) {
-        requestToUpdateOne({ tab, number: absoluteNumber });
+        requestToUpdateOne({ tab, number: absoluteNumber, toggleState });
       } else {
         const number = useRelativeNumberSign
           ? `${relativeNumber < 0 ? "" : "+"}${relativeNumber}`
           : Math.abs(relativeNumber);
-        requestToUpdateOne({ tab, number });
+        requestToUpdateOne({ tab, number, toggleState });
       }
     }
 
@@ -119,7 +139,7 @@ async function updateRelativeNumbers(tabs, { collapsedTabGroupIds }) {
   }
 }
 
-function updateAbsoluteNumbers(tabs, { collapsedTabGroupIds }) {
+function updateAbsoluteNumbers(tabs, { collapsedTabGroupIds, toggleState }) {
   let number = 1;
 
   for (const tab of tabs) {
@@ -128,7 +148,7 @@ function updateAbsoluteNumbers(tabs, { collapsedTabGroupIds }) {
     }
 
     if (isValidUrl(tab.url)) {
-      requestToUpdateOne({ tab, number });
+      requestToUpdateOne({ tab, number, toggleState });
     }
 
     number++;
@@ -147,8 +167,9 @@ function isValidUrl(urlString) {
   );
 }
 
-function requestToUpdateOne({ tab, number }) {
-  const isEnabled = config.enabled && !config.disabledTabIds.has(tab.id);
+function requestToUpdateOne({ tab, number, toggleState }) {
+  const isEnabled =
+    toggleState.enabled && !toggleState.disabledTabIds.has(tab.id);
   const tabName = tab.title;
 
   chrome.scripting.executeScript({
@@ -185,8 +206,11 @@ function updateOne({ isEnabled, number, tabName }) {
   document.showTabNumbers = cache;
 }
 
-function toggleAllTabs() {
-  config.enabled = !config.enabled;
+async function toggleAllTabs() {
+  const toggleState = await toggleStateStorage.get();
+  toggleState.enabled = !toggleState.enabled;
+  await toggleStateStorage.set(toggleState);
+
   updateAll();
 }
 
@@ -196,22 +220,27 @@ async function toggleCurrentTab() {
     lastFocusedWindow: true,
   });
 
-  const isDisabled = config.disabledTabIds.has(currentTab.id);
+  const toggleState = await toggleStateStorage.get();
+  const isDisabled = toggleState.disabledTabIds.has(currentTab.id);
 
   if (isDisabled) {
-    config.disabledTabIds.delete(currentTab.id);
+    toggleState.disabledTabIds.delete(currentTab.id);
   } else {
-    config.disabledTabIds.add(currentTab.id);
+    toggleState.disabledTabIds.add(currentTab.id);
   }
+
+  await toggleStateStorage.set(toggleState);
 
   updateAll();
 }
 
-function onTabRemoved(tabId) {
-  const isDisabled = config.disabledTabIds.has(tabId);
+async function onTabRemoved(tabId) {
+  const toggleState = await toggleStateStorage.get();
+  const isDisabled = toggleState.disabledTabIds.has(tabId);
 
   if (isDisabled) {
-    config.disabledTabIds.delete(tabId);
+    toggleState.disabledTabIds.delete(tabId);
+    await toggleStateStorage.set(toggleState);
   }
 }
 
