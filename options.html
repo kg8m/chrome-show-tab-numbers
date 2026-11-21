@@ -14,6 +14,25 @@
       #fields > label[aria-disabled="true"] {
         color: #999999;
       }
+
+      /* Align the radio buttons, the names, and the examples in columns. */
+      #number-format-fields {
+        display: grid;
+        grid-template-columns: auto auto 1fr;
+        column-gap: 0.25em;
+        margin-top: 1em;
+      }
+
+      #number-format-fields > label {
+        display: grid;
+        grid-column: 1 / -1;
+        grid-template-columns: subgrid;
+        align-items: center;
+      }
+
+      #number-format-fields > label > span:last-child {
+        margin-left: 1em;
+      }
     </style>
   </head>
 
@@ -29,6 +48,11 @@
         Display “+” and “-” signs next to the relative numbers
       </label>
     </div>
+
+    <fieldset id="number-format-fields">
+      <legend>Number format</legend>
+      <!-- Radio buttons are appended by options.js. -->
+    </fieldset>
 
     <script type="module" src="options.js"></script>
   </body>
