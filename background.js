@@ -216,6 +216,12 @@ function isValidUrl(urlString) {
 }
 
 function requestToUpdateOne({ tab, formattedNumber, toggleState }) {
+  // Injecting into a tab which has never been loaded, e.g., a tab restored at startup, fails. The tab will be updated
+  // when it is loaded because `chrome.tabs.onUpdated` fires then.
+  if (tab.status === "unloaded") {
+    return;
+  }
+
   const isEnabled =
     toggleState.enabled && !toggleState.disabledTabIds.has(tab.id);
   const tabName = tab.title;
