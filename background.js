@@ -1,3 +1,9 @@
+import {
+  NOTIFICATION_COUNT_PATTERN,
+  NUMBERED_PATTERN,
+  formatNumber,
+} from "./number-format.js";
+
 const storage = {
   get: async (key) => (await chrome.storage.sync.get([key]))[key],
 };
@@ -93,6 +99,7 @@ async function updateAll() {
 
   const useRelativeNumber = await storage.get("useRelativeNumber");
   const useRelativeNumberSign = await storage.get("useRelativeNumberSign");
+  const numberFormat = await storage.get("numberFormat");
 
   // Read the toggle state after all other asynchronous operations so that the update uses the latest state. Otherwise,
   // an update started before a toggle command could overwrite the result of the command.
@@ -103,9 +110,14 @@ async function updateAll() {
       collapsedTabGroupIds,
       toggleState,
       useRelativeNumberSign,
+      numberFormat,
     });
   } else {
-    updateAbsoluteNumbers(tabs, { collapsedTabGroupIds, toggleState });
+    updateAbsoluteNumbers(tabs, {
+      collapsedTabGroupIds,
+      toggleState,
+      numberFormat,
+    });
   }
 }
 
@@ -124,7 +136,7 @@ async function findCollapsedTabGroups() {
 
 function updateRelativeNumbers(
   tabs,
-  { collapsedTabGroupIds, toggleState, useRelativeNumberSign },
+  { collapsedTabGroupIds, toggleState, useRelativeNumberSign, numberFormat },
 ) {
   let relativeNumber = 0;
 
@@ -147,12 +159,22 @@ function updateRelativeNumbers(
 
     if (isValidUrl(tab.url)) {
       if (tab.active) {
-        requestToUpdateOne({ tab, number: absoluteNumber, toggleState });
+        const formattedNumber = formatNumber(absoluteNumber, {
+          format: numberFormat,
+        });
+        requestToUpdateOne({ tab, formattedNumber, toggleState });
       } else {
-        const number = useRelativeNumberSign
-          ? `${relativeNumber < 0 ? "" : "+"}${relativeNumber}`
-          : Math.abs(relativeNumber);
-        requestToUpdateOne({ tab, number, toggleState });
+        let sign = "";
+
+        if (useRelativeNumberSign) {
+          sign = relativeNumber < 0 ? "-" : "+";
+        }
+
+        const formattedNumber = formatNumber(Math.abs(relativeNumber), {
+          format: numberFormat,
+          sign,
+        });
+        requestToUpdateOne({ tab, formattedNumber, toggleState });
       }
     }
 
@@ -161,7 +183,10 @@ function updateRelativeNumbers(
   }
 }
 
-function updateAbsoluteNumbers(tabs, { collapsedTabGroupIds, toggleState }) {
+function updateAbsoluteNumbers(
+  tabs,
+  { collapsedTabGroupIds, toggleState, numberFormat },
+) {
   let number = 1;
 
   for (const tab of tabs) {
@@ -170,7 +195,8 @@ function updateAbsoluteNumbers(tabs, { collapsedTabGroupIds, toggleState }) {
     }
 
     if (isValidUrl(tab.url)) {
-      requestToUpdateOne({ tab, number, toggleState });
+      const formattedNumber = formatNumber(number, { format: numberFormat });
+      requestToUpdateOne({ tab, formattedNumber, toggleState });
     }
 
     number++;
@@ -189,39 +215,50 @@ function isValidUrl(urlString) {
   );
 }
 
-function requestToUpdateOne({ tab, number, toggleState }) {
+function requestToUpdateOne({ tab, formattedNumber, toggleState }) {
   const isEnabled =
     toggleState.enabled && !toggleState.disabledTabIds.has(tab.id);
   const tabName = tab.title;
 
+  // Pass the patterns as strings because the injected function can’t import modules and its arguments must be
+  // JSON-serializable.
+  const patterns = {
+    numbered: NUMBERED_PATTERN.source,
+    notificationCount: NOTIFICATION_COUNT_PATTERN.source,
+    flags: NUMBERED_PATTERN.flags,
+  };
+
   chrome.scripting.executeScript({
     target: { tabId: tab.id },
     func: updateOne,
-    args: [{ isEnabled, number, tabName }],
+    args: [{ isEnabled, formattedNumber, tabName, patterns }],
   });
 }
 
-function updateOne({ isEnabled, number, tabName }) {
+function updateOne({ isEnabled, formattedNumber, tabName, patterns }) {
   const cache = document.showTabNumbers ?? {};
   const isCacheAvailable =
     isEnabled === cache.enabled &&
-    number === cache.number &&
+    formattedNumber === cache.formattedNumber &&
     tabName === cache.numberedTitle;
 
   if (isCacheAvailable) {
     return;
   }
 
-  const NUMBERED_PATTERN = /^[-+]?\d+\. ?/;
-  const NOTIFICATION_COUNT_PATTERN = /^(\(\d+\)) [-+]?\d+\. (?:\(\d+\) )?/;
+  const numberedPattern = new RegExp(patterns.numbered, patterns.flags);
+  const notificationCountPattern = new RegExp(
+    patterns.notificationCount,
+    patterns.flags,
+  );
   const unnumberedTitle = tabName
-    .replace(NUMBERED_PATTERN, "")
-    .replace(NOTIFICATION_COUNT_PATTERN, "$1 ");
+    .replace(numberedPattern, "")
+    .replace(notificationCountPattern, "$1 ");
 
   cache.enabled = isEnabled;
-  cache.number = number;
+  cache.formattedNumber = formattedNumber;
   cache.numberedTitle = (
-    cache.enabled ? `${number}. ${unnumberedTitle}` : unnumberedTitle
+    cache.enabled ? `${formattedNumber} ${unnumberedTitle}` : unnumberedTitle
   ).trim();
 
   document.title = cache.numberedTitle;

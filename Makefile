@@ -2,7 +2,7 @@
 HELP_SEPARATOR := ＠
 
 PACKAGE_NAME := chrome-show-tab-numbers
-PACKAGE_TARGETS := manifest.json background.js options.html options.js assets/icon128.png
+PACKAGE_TARGETS := manifest.json background.js number-format.js options.html options.js assets/icon128.png
 
 .PHONY: help
 help:  ## Show help
@@ -22,6 +22,10 @@ format:  ## Format files
 .PHONY: format-check
 format-check:  ## Check if files are formatted
 	npm run format-check
+
+.PHONY: test
+test:  ## Run tests
+	npm test
 
 .PHONY: update-major
 update-major:  ## Update the major version
