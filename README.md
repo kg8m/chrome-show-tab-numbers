@@ -12,6 +12,7 @@ Notable features:
 - This extension supports Google Chrome’s collapsed tab group feature, automatically ignoring tabs in a collapsed tab group.
 - You can toggle tab numbering for all tabs or just the current one via keyboard shortcuts or the extension’s context menu.
 - Tab numbers can be relative, displaying the current tab’s absolute number and indicating the position of other tabs relative to it ― how many tabs they are ahead or behind the current one.
+- You can choose the number format, e.g., `1.`, `1️⃣`, or `①`, in the options page. Symbols are used for 1 to 9 so that tab numbers are distinguishable from notification counts on some sites.
 
 ## How to Install
 
