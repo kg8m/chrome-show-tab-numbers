@@ -8,6 +8,10 @@ updates:
       day: saturday
       time: "10:00"
       timezone: Asia/Tokyo
+    # Wait for new releases to settle before updating because Dependabot PRs are merged automatically. Security updates
+    # aren’t delayed.
+    cooldown:
+      default-days: 7
 
   - package-ecosystem: npm
     directory: /
@@ -16,6 +20,10 @@ updates:
       day: saturday
       time: "10:00"
       timezone: Asia/Tokyo
+    # Wait for new releases to settle before updating because Dependabot PRs are merged automatically. Security updates
+    # aren’t delayed.
+    cooldown:
+      default-days: 7
     allow:
       - dependency-type: all
     groups:
