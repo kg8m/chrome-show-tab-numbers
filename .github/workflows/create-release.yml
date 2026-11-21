@@ -5,16 +5,18 @@ on:
 
 name: Create a Release
 
+permissions:
+  contents: write
+
 jobs:
   create-release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
       - name: Create release
-        run: >-
-          latest_tag="$(git describe --tags --abbrev=0)";
-          gh release create "${latest_tag}" --generate-notes;
+        run: gh release create "${TAG}" --generate-notes
         env:
+          GH_REPO: ${{ github.repository }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
     timeout-minutes: 5
