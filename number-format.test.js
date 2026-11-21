@@ -81,6 +81,15 @@ describe("NUMBERED_PATTERN and NOTIFICATION_COUNT_PATTERN", () => {
     assert.equal(removeNumber("1.Title"), "Title");
   });
 
+  it("removes a number without the original title in any format", () => {
+    for (const format of Object.keys(NUMBER_FORMATS)) {
+      for (const sign of ["", "-", "+"]) {
+        const numbered = formatNumber(1, { format, sign });
+        assert.equal(removeNumber(numbered), "", `${format} ${sign}1`);
+      }
+    }
+  });
+
   it("doesn’t remove a symbol without a space", () => {
     assert.equal(removeNumber("①Title"), "①Title");
   });

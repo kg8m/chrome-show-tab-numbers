@@ -33,9 +33,11 @@ const SYMBOLS_SOURCE = Object.values(NUMBER_FORMATS)
   .join("|");
 
 // Match a number in any format at the beginning of a title so that a number added in another format can be also
-// removed. A space after a symbol is required to avoid removing a symbol which is a part of the original title.
+// removed. A space after a symbol is required to avoid removing a symbol which is a part of the original title. The end
+// of a title is also accepted instead of a space because a numbered title without the original title, e.g., `①`, has no
+// space after the symbol.
 export const NUMBERED_PATTERN = new RegExp(
-  `^[-+]?(?:\\d+\\. ?|(?:${SYMBOLS_SOURCE}) )`,
+  `^[-+]?(?:\\d+\\. ?|(?:${SYMBOLS_SOURCE})(?: |$))`,
   "u",
 );
 
