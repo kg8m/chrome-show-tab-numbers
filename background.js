@@ -11,12 +11,27 @@ const toggleStateStorage = {
 
     return { enabled, disabledTabIds: new Set(disabledTabIds) };
   },
-  set: async ({ enabled, disabledTabIds }) =>
-    await chrome.storage.session.set({
-      enabled,
-      disabledTabIds: [...disabledTabIds],
-    }),
+
+  // Serialize updates because each update reads, modifies, and writes the whole state asynchronously. Otherwise,
+  // concurrent updates could overwrite each other’s changes.
+  update: (modify) => {
+    const result = toggleStateUpdateQueue.then(async () => {
+      const toggleState = await toggleStateStorage.get();
+      modify(toggleState);
+
+      await chrome.storage.session.set({
+        enabled: toggleState.enabled,
+        disabledTabIds: [...toggleState.disabledTabIds],
+      });
+    });
+
+    // Keep the queue alive even if an update fails.
+    toggleStateUpdateQueue = result.catch(() => {});
+
+    return result;
+  },
 };
+let toggleStateUpdateQueue = Promise.resolve();
 
 const COMMANDS = {
   "toggle-all-tabs": toggleAllTabs,
@@ -214,9 +229,9 @@ function updateOne({ isEnabled, number, tabName }) {
 }
 
 async function toggleAllTabs() {
-  const toggleState = await toggleStateStorage.get();
-  toggleState.enabled = !toggleState.enabled;
-  await toggleStateStorage.set(toggleState);
+  await toggleStateStorage.update((toggleState) => {
+    toggleState.enabled = !toggleState.enabled;
+  });
 
   updateAll();
 }
@@ -227,28 +242,23 @@ async function toggleCurrentTab() {
     lastFocusedWindow: true,
   });
 
-  const toggleState = await toggleStateStorage.get();
-  const isDisabled = toggleState.disabledTabIds.has(currentTab.id);
+  await toggleStateStorage.update((toggleState) => {
+    const isDisabled = toggleState.disabledTabIds.has(currentTab.id);
 
-  if (isDisabled) {
-    toggleState.disabledTabIds.delete(currentTab.id);
-  } else {
-    toggleState.disabledTabIds.add(currentTab.id);
-  }
-
-  await toggleStateStorage.set(toggleState);
+    if (isDisabled) {
+      toggleState.disabledTabIds.delete(currentTab.id);
+    } else {
+      toggleState.disabledTabIds.add(currentTab.id);
+    }
+  });
 
   updateAll();
 }
 
 async function onTabRemoved(tabId) {
-  const toggleState = await toggleStateStorage.get();
-  const isDisabled = toggleState.disabledTabIds.has(tabId);
-
-  if (isDisabled) {
+  await toggleStateStorage.update((toggleState) => {
     toggleState.disabledTabIds.delete(tabId);
-    await toggleStateStorage.set(toggleState);
-  }
+  });
 }
 
 function onCommand(command) {
