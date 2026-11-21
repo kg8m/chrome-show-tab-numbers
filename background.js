@@ -76,11 +76,19 @@ async function updateAll() {
 
   tabs.sort((tab1, tab2) => tab1.index - tab2.index);
 
-  const toggleState = await toggleStateStorage.get();
   const useRelativeNumber = await storage.get("useRelativeNumber");
+  const useRelativeNumberSign = await storage.get("useRelativeNumberSign");
+
+  // Read the toggle state after all other asynchronous operations so that the update uses the latest state. Otherwise,
+  // an update started before a toggle command could overwrite the result of the command.
+  const toggleState = await toggleStateStorage.get();
 
   if (useRelativeNumber) {
-    await updateRelativeNumbers(tabs, { collapsedTabGroupIds, toggleState });
+    updateRelativeNumbers(tabs, {
+      collapsedTabGroupIds,
+      toggleState,
+      useRelativeNumberSign,
+    });
   } else {
     updateAbsoluteNumbers(tabs, { collapsedTabGroupIds, toggleState });
   }
@@ -99,9 +107,9 @@ async function findCollapsedTabGroups() {
   }
 }
 
-async function updateRelativeNumbers(
+function updateRelativeNumbers(
   tabs,
-  { collapsedTabGroupIds, toggleState },
+  { collapsedTabGroupIds, toggleState, useRelativeNumberSign },
 ) {
   let relativeNumber = 0;
 
@@ -115,7 +123,6 @@ async function updateRelativeNumbers(
     }
   }
 
-  const useRelativeNumberSign = await storage.get("useRelativeNumberSign");
   let absoluteNumber = 1;
 
   for (const tab of tabs) {
