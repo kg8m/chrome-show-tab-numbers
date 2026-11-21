@@ -1,8 +1,37 @@
-const config = { enabled: true, disabledTabIds: new Set() };
-
 const storage = {
   get: async (key) => (await chrome.storage.sync.get([key]))[key],
 };
+
+// Store the toggle state in the session storage because the service worker is terminated when idle and its variables
+// are reset. Tab IDs are valid only within a browser session, so the state doesn’t need to persist across sessions.
+const toggleStateStorage = {
+  get: async () => {
+    const { enabled = true, disabledTabIds = [] } =
+      await chrome.storage.session.get(["enabled", "disabledTabIds"]);
+
+    return { enabled, disabledTabIds: new Set(disabledTabIds) };
+  },
+
+  // Serialize updates because each update reads, modifies, and writes the whole state asynchronously. Otherwise,
+  // concurrent updates could overwrite each other’s changes.
+  update: (modify) => {
+    const result = toggleStateUpdateQueue.then(async () => {
+      const toggleState = await toggleStateStorage.get();
+      modify(toggleState);
+
+      await chrome.storage.session.set({
+        enabled: toggleState.enabled,
+        disabledTabIds: [...toggleState.disabledTabIds],
+      });
+    });
+
+    // Keep the queue alive even if an update fails.
+    toggleStateUpdateQueue = result.catch(() => {});
+
+    return result;
+  },
+};
+let toggleStateUpdateQueue = Promise.resolve();
 
 const COMMANDS = {
   "toggle-all-tabs": toggleAllTabs,
@@ -41,8 +70,10 @@ const INVALID_HOSTNAMES = new Set(["chrome.google.com"]);
 
 let timer = -1;
 
-function requestToUpdateAll() {
-  if (!config.enabled) {
+async function requestToUpdateAll() {
+  const { enabled } = await toggleStateStorage.get();
+
+  if (!enabled) {
     return;
   }
 
@@ -61,11 +92,20 @@ async function updateAll() {
   tabs.sort((tab1, tab2) => tab1.index - tab2.index);
 
   const useRelativeNumber = await storage.get("useRelativeNumber");
+  const useRelativeNumberSign = await storage.get("useRelativeNumberSign");
+
+  // Read the toggle state after all other asynchronous operations so that the update uses the latest state. Otherwise,
+  // an update started before a toggle command could overwrite the result of the command.
+  const toggleState = await toggleStateStorage.get();
 
   if (useRelativeNumber) {
-    await updateRelativeNumbers(tabs, { collapsedTabGroupIds });
+    updateRelativeNumbers(tabs, {
+      collapsedTabGroupIds,
+      toggleState,
+      useRelativeNumberSign,
+    });
   } else {
-    updateAbsoluteNumbers(tabs, { collapsedTabGroupIds });
+    updateAbsoluteNumbers(tabs, { collapsedTabGroupIds, toggleState });
   }
 }
 
@@ -82,7 +122,10 @@ async function findCollapsedTabGroups() {
   }
 }
 
-async function updateRelativeNumbers(tabs, { collapsedTabGroupIds }) {
+function updateRelativeNumbers(
+  tabs,
+  { collapsedTabGroupIds, toggleState, useRelativeNumberSign },
+) {
   let relativeNumber = 0;
 
   for (const tab of tabs) {
@@ -95,7 +138,6 @@ async function updateRelativeNumbers(tabs, { collapsedTabGroupIds }) {
     }
   }
 
-  const useRelativeNumberSign = await storage.get("useRelativeNumberSign");
   let absoluteNumber = 1;
 
   for (const tab of tabs) {
@@ -105,12 +147,12 @@ async function updateRelativeNumbers(tabs, { collapsedTabGroupIds }) {
 
     if (isValidUrl(tab.url)) {
       if (tab.active) {
-        requestToUpdateOne({ tab, number: absoluteNumber });
+        requestToUpdateOne({ tab, number: absoluteNumber, toggleState });
       } else {
         const number = useRelativeNumberSign
           ? `${relativeNumber < 0 ? "" : "+"}${relativeNumber}`
           : Math.abs(relativeNumber);
-        requestToUpdateOne({ tab, number });
+        requestToUpdateOne({ tab, number, toggleState });
       }
     }
 
@@ -119,7 +161,7 @@ async function updateRelativeNumbers(tabs, { collapsedTabGroupIds }) {
   }
 }
 
-function updateAbsoluteNumbers(tabs, { collapsedTabGroupIds }) {
+function updateAbsoluteNumbers(tabs, { collapsedTabGroupIds, toggleState }) {
   let number = 1;
 
   for (const tab of tabs) {
@@ -128,7 +170,7 @@ function updateAbsoluteNumbers(tabs, { collapsedTabGroupIds }) {
     }
 
     if (isValidUrl(tab.url)) {
-      requestToUpdateOne({ tab, number });
+      requestToUpdateOne({ tab, number, toggleState });
     }
 
     number++;
@@ -147,8 +189,9 @@ function isValidUrl(urlString) {
   );
 }
 
-function requestToUpdateOne({ tab, number }) {
-  const isEnabled = config.enabled && !config.disabledTabIds.has(tab.id);
+function requestToUpdateOne({ tab, number, toggleState }) {
+  const isEnabled =
+    toggleState.enabled && !toggleState.disabledTabIds.has(tab.id);
   const tabName = tab.title;
 
   chrome.scripting.executeScript({
@@ -185,8 +228,11 @@ function updateOne({ isEnabled, number, tabName }) {
   document.showTabNumbers = cache;
 }
 
-function toggleAllTabs() {
-  config.enabled = !config.enabled;
+async function toggleAllTabs() {
+  await toggleStateStorage.update((toggleState) => {
+    toggleState.enabled = !toggleState.enabled;
+  });
+
   updateAll();
 }
 
@@ -196,23 +242,23 @@ async function toggleCurrentTab() {
     lastFocusedWindow: true,
   });
 
-  const isDisabled = config.disabledTabIds.has(currentTab.id);
+  await toggleStateStorage.update((toggleState) => {
+    const isDisabled = toggleState.disabledTabIds.has(currentTab.id);
 
-  if (isDisabled) {
-    config.disabledTabIds.delete(currentTab.id);
-  } else {
-    config.disabledTabIds.add(currentTab.id);
-  }
+    if (isDisabled) {
+      toggleState.disabledTabIds.delete(currentTab.id);
+    } else {
+      toggleState.disabledTabIds.add(currentTab.id);
+    }
+  });
 
   updateAll();
 }
 
-function onTabRemoved(tabId) {
-  const isDisabled = config.disabledTabIds.has(tabId);
-
-  if (isDisabled) {
-    config.disabledTabIds.delete(tabId);
-  }
+async function onTabRemoved(tabId) {
+  await toggleStateStorage.update((toggleState) => {
+    toggleState.disabledTabIds.delete(tabId);
+  });
 }
 
 function onCommand(command) {
