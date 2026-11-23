@@ -3,6 +3,7 @@ import {
   NUMBERED_PATTERN,
   formatNumber,
 } from "./number-format.js";
+import { isValidUrl } from "./tab-number.js";
 
 const storage = {
   get: async (key) => (await chrome.storage.sync.get([key]))[key],
@@ -70,9 +71,6 @@ chrome.tabs.onUpdated.addListener(requestToUpdateAll);
 chrome.tabs.onRemoved.addListener(onTabRemoved);
 chrome.commands.onCommand.addListener(onCommand);
 chrome.contextMenus.onClicked.addListener(onMenuClicked);
-
-const VALID_PROTOCOLS = new Set(["https:", "http:"]);
-const INVALID_HOSTNAMES = new Set(["chrome.google.com"]);
 
 let timer = -1;
 
@@ -201,18 +199,6 @@ function updateAbsoluteNumbers(
 
     number++;
   }
-}
-
-function isValidUrl(urlString) {
-  if (urlString === "") {
-    return false;
-  }
-
-  const url = new URL(urlString);
-
-  return (
-    VALID_PROTOCOLS.has(url.protocol) && !INVALID_HOSTNAMES.has(url.hostname)
-  );
 }
 
 function requestToUpdateOne({ tab, formattedNumber, toggleState }) {
