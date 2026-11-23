@@ -18,7 +18,7 @@ Notable features:
 
 ### From Chrome Web Store
 
-https://chrome.google.com/webstore/detail/pflnpcinjbcfefgbejjfanemlgcfjbna
+https://chromewebstore.google.com/detail/pflnpcinjbcfefgbejjfanemlgcfjbna
 
 ### From Source
 
