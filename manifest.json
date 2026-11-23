@@ -3,6 +3,7 @@
   "name": "Chrome Show Tab Numbers",
   "version": "1.7.0",
   "description": "A Chromium extension to show tab numbers.",
+  "minimum_chrome_version": "110",
   "icons": {
     "128": "assets/icon128.png"
   },
