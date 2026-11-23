@@ -20,8 +20,15 @@ describe("isValidUrl", () => {
     assert.equal(isValidUrl(""), false);
   });
 
-  it("rejects the Chrome Web Store", () => {
-    assert.equal(isValidUrl("https://chrome.google.com/webstore/"), false);
+  it("rejects the Chrome Web Store and its developer dashboard", () => {
+    assert.equal(
+      isValidUrl("https://chromewebstore.google.com/category/extensions"),
+      false,
+    );
+    assert.equal(
+      isValidUrl("https://chrome.google.com/webstore/devconsole"),
+      false,
+    );
   });
 });
 

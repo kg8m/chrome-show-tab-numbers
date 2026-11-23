@@ -1,7 +1,12 @@
 import { formatNumber } from "./number-format.js";
 
 const VALID_PROTOCOLS = new Set(["https:", "http:"]);
-const INVALID_HOSTNAMES = new Set(["chrome.google.com"]);
+// The Chrome Web Store, which extensions can’t script. `chrome.google.com` is the old domain, which is still used for
+// the developer dashboard.
+const INVALID_HOSTNAMES = new Set([
+  "chromewebstore.google.com",
+  "chrome.google.com",
+]);
 
 export function isValidUrl(urlString) {
   if (urlString === "") {
