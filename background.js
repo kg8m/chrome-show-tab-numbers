@@ -1,9 +1,8 @@
 import {
   NOTIFICATION_COUNT_PATTERN,
   NUMBERED_PATTERN,
-  formatNumber,
 } from "./number-format.js";
-import { isValidUrl } from "./tab-number.js";
+import { numberTabs } from "./tab-number.js";
 
 const storage = {
   get: async (key) => (await chrome.storage.sync.get([key]))[key],
@@ -93,8 +92,6 @@ async function updateAll() {
     collapsedTabGroups.map((tabGroup) => tabGroup.id),
   );
 
-  tabs.sort((tab1, tab2) => tab1.index - tab2.index);
-
   const useRelativeNumber = await storage.get("useRelativeNumber");
   const useRelativeNumberSign = await storage.get("useRelativeNumberSign");
   const numberFormat = await storage.get("numberFormat");
@@ -103,19 +100,15 @@ async function updateAll() {
   // an update started before a toggle command could overwrite the result of the command.
   const toggleState = await toggleStateStorage.get();
 
-  if (useRelativeNumber) {
-    updateRelativeNumbers(tabs, {
-      collapsedTabGroupIds,
-      toggleState,
-      useRelativeNumberSign,
-      numberFormat,
-    });
-  } else {
-    updateAbsoluteNumbers(tabs, {
-      collapsedTabGroupIds,
-      toggleState,
-      numberFormat,
-    });
+  const numberedTabs = numberTabs(tabs, {
+    collapsedTabGroupIds,
+    useRelativeNumber,
+    useRelativeNumberSign,
+    numberFormat,
+  });
+
+  for (const { tab, formattedNumber } of numberedTabs) {
+    requestToUpdateOne({ tab, formattedNumber, toggleState });
   }
 }
 
@@ -132,82 +125,7 @@ async function findCollapsedTabGroups() {
   }
 }
 
-function updateRelativeNumbers(
-  tabs,
-  { collapsedTabGroupIds, toggleState, useRelativeNumberSign, numberFormat },
-) {
-  let relativeNumber = 0;
-
-  for (const tab of tabs) {
-    if (tab.active) {
-      break;
-    } else {
-      if (!collapsedTabGroupIds.has(tab.groupId)) {
-        relativeNumber--;
-      }
-    }
-  }
-
-  let absoluteNumber = 1;
-
-  for (const tab of tabs) {
-    if (collapsedTabGroupIds.has(tab.groupId)) {
-      continue;
-    }
-
-    if (isValidUrl(tab.url)) {
-      if (tab.active) {
-        const formattedNumber = formatNumber(absoluteNumber, {
-          format: numberFormat,
-        });
-        requestToUpdateOne({ tab, formattedNumber, toggleState });
-      } else {
-        let sign = "";
-
-        if (useRelativeNumberSign) {
-          sign = relativeNumber < 0 ? "-" : "+";
-        }
-
-        const formattedNumber = formatNumber(Math.abs(relativeNumber), {
-          format: numberFormat,
-          sign,
-        });
-        requestToUpdateOne({ tab, formattedNumber, toggleState });
-      }
-    }
-
-    absoluteNumber++;
-    relativeNumber++;
-  }
-}
-
-function updateAbsoluteNumbers(
-  tabs,
-  { collapsedTabGroupIds, toggleState, numberFormat },
-) {
-  let number = 1;
-
-  for (const tab of tabs) {
-    if (collapsedTabGroupIds.has(tab.groupId)) {
-      continue;
-    }
-
-    if (isValidUrl(tab.url)) {
-      const formattedNumber = formatNumber(number, { format: numberFormat });
-      requestToUpdateOne({ tab, formattedNumber, toggleState });
-    }
-
-    number++;
-  }
-}
-
 function requestToUpdateOne({ tab, formattedNumber, toggleState }) {
-  // Injecting into a tab which has never been loaded, e.g., a tab restored at startup, fails. The tab will be updated
-  // when it is loaded because `chrome.tabs.onUpdated` fires then.
-  if (tab.status === "unloaded") {
-    return;
-  }
-
   const isEnabled =
     toggleState.enabled && !toggleState.disabledTabIds.has(tab.id);
   const tabName = tab.title;
